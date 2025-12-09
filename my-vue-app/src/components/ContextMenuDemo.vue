@@ -315,6 +315,73 @@ const handleActionDropdown = (action: string, close: () => void) => {
         </ContextMenu>
       </div>
     </div>
+
+    <hr class="section-divider" />
+    
+    <h2 style="margin-top: 40px;">Smart Positioning Demo</h2>
+    <p style="color: #666; margin-bottom: 20px;">
+      These examples demonstrate automatic menu repositioning when there's not enough space.
+      Try clicking/right-clicking buttons near the screen edges!
+    </p>
+
+    <!-- Example 7: Edge positioning tests -->
+    <div class="example">
+      <h3>Example 7: Edge Positioning Tests</h3>
+      <div class="edge-test-container">
+        <!-- Top-left corner -->
+        <div class="corner top-left">
+          <ContextMenu on="left-click" :menu-items="menuItems">
+            <button class="edge-button">Top Left ▼</button>
+          </ContextMenu>
+        </div>
+
+        <!-- Top-right corner -->
+        <div class="corner top-right">
+          <ContextMenu on="left-click" :menu-items="menuItems">
+            <button class="edge-button">Top Right ▼</button>
+          </ContextMenu>
+        </div>
+
+        <!-- Bottom-left corner -->
+        <div class="corner bottom-left">
+          <ContextMenu on="left-click" :menu-items="menuItems">
+            <button class="edge-button">Bottom Left ▼</button>
+          </ContextMenu>
+        </div>
+
+        <!-- Bottom-right corner -->
+        <div class="corner bottom-right">
+          <ContextMenu on="left-click" :menu-items="menuItems">
+            <button class="edge-button">Bottom Right ▼</button>
+          </ContextMenu>
+        </div>
+
+        <!-- Center instruction -->
+        <div class="center-instruction">
+          <p>📍 Click buttons in corners to see smart positioning</p>
+          <p style="font-size: 12px; color: #999; margin-top: 8px;">
+            Menus automatically flip to stay within viewport
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Example 8: Right-click edge test -->
+    <div class="example">
+      <h3>Example 8: Right-Click Edge Test</h3>
+      <div class="right-click-edge-demo">
+        <ContextMenu :menu-items="menuItems">
+          <div class="large-context-area">
+            <h4>Right-click anywhere in this area!</h4>
+            <p>Try right-clicking near the edges of your screen</p>
+            <p style="margin-top: 20px; font-size: 14px; color: #666;">
+              💡 The context menu will automatically position itself to stay within the viewport bounds.
+              Try right-clicking in different corners and edges to see the smart positioning in action!
+            </p>
+          </div>
+        </ContextMenu>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -610,6 +677,113 @@ h3 {
   font-size: 13px;
   color: #7f8c8d;
   margin-top: 2px;
+}
+
+/* Edge positioning test styles */
+.edge-test-container {
+  position: relative;
+  height: 400px;
+  border: 2px dashed #ddd;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.corner {
+  position: absolute;
+}
+
+.corner.top-left {
+  top: 10px;
+  left: 10px;
+}
+
+.corner.top-right {
+  top: 10px;
+  right: 10px;
+}
+
+.corner.bottom-left {
+  bottom: 10px;
+  left: 10px;
+}
+
+.corner.bottom-right {
+  bottom: 10px;
+  right: 10px;
+}
+
+.edge-button {
+  padding: 10px 20px;
+  background: white;
+  border: 2px solid #3498db;
+  border-radius: 8px;
+  color: #3498db;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.edge-button:hover {
+  background: #3498db;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.center-instruction {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.center-instruction p {
+  margin: 0;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Right-click edge test */
+.right-click-edge-demo {
+  margin-top: 20px;
+}
+
+.large-context-area {
+  min-height: 300px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  cursor: default;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+}
+
+.large-context-area:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.large-context-area h4 {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+}
+
+.large-context-area p {
+  margin: 5px 0;
+  font-size: 16px;
 }
 </style>
 

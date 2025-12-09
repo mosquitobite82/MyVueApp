@@ -21,8 +21,62 @@ const props = withDefaults(defineProps<Props>(), {
 const showMenu = ref(false)
 const menuPosition = ref({ x: 0, y: 0 })
 const containerRef = ref<HTMLElement | null>(null)
+const menuRef = ref<HTMLElement | null>(null)
 const isDropdownMode = ref(false)
 const justOpened = ref(false)
+
+const adjustMenuPosition = async (initialX: number, initialY: number, referenceRect?: DOMRect) => {
+  // Wait for menu to be rendered
+  await nextTick()
+  
+  // Small delay to ensure menu is fully rendered with dimensions
+  await new Promise(resolve => setTimeout(resolve, 0))
+  
+  const menuElement = document.querySelector('.context-menu') as HTMLElement
+  if (!menuElement) return
+
+  const menuRect = menuElement.getBoundingClientRect()
+  const viewportWidth = window.innerWidth
+  const viewportHeight = window.innerHeight
+  
+  let finalX = initialX
+  let finalY = initialY
+
+  // Check horizontal overflow
+  if (initialX + menuRect.width > viewportWidth) {
+    if (props.on === 'left-click' && referenceRect) {
+      // For dropdown: position to the left edge of the reference element
+      finalX = referenceRect.right - menuRect.width
+    } else {
+      // For right-click: position to the left of cursor
+      finalX = initialX - menuRect.width
+    }
+    
+    // Ensure it doesn't go off the left edge
+    if (finalX < 0) {
+      finalX = Math.min(initialX, viewportWidth - menuRect.width)
+    }
+  }
+
+  // Check vertical overflow
+  if (initialY + menuRect.height > viewportHeight) {
+    if (props.on === 'left-click' && referenceRect) {
+      // For dropdown: position above the reference element
+      finalY = referenceRect.top - menuRect.height - 4
+    } else {
+      // For right-click: position above cursor
+      finalY = initialY - menuRect.height
+    }
+    
+    // Ensure it doesn't go off the top edge
+    if (finalY < 0) {
+      finalY = Math.min(initialY, viewportHeight - menuRect.height)
+    }
+  }
+
+  // Update position
+  menuPosition.value = { x: finalX, y: finalY }
+}
 
 const handleContextMenu = (event: MouseEvent) => {
   if (props.on !== 'right-click') return
@@ -33,14 +87,20 @@ const handleContextMenu = (event: MouseEvent) => {
 
   isDropdownMode.value = false
 
-  // Set menu position at cursor
+  // Set initial menu position at cursor
+  const initialX = event.clientX
+  const initialY = event.clientY
+  
   menuPosition.value = {
-    x: event.clientX,
-    y: event.clientY
+    x: initialX,
+    y: initialY
   }
 
   // Show the menu
   showMenu.value = true
+  
+  // Adjust position after render
+  adjustMenuPosition(initialX, initialY)
 }
 
 const handleClick = (event: MouseEvent) => {
@@ -62,16 +122,22 @@ const handleClick = (event: MouseEvent) => {
   if (containerRef.value) {
     const rect = containerRef.value.getBoundingClientRect()
     
-    // Position below the element (dropdown style), aligned to left edge
+    // Initial position below the element (dropdown style), aligned to left edge
+    const initialX = rect.left
+    const initialY = rect.bottom + 4 // 4px gap below element
+    
     menuPosition.value = {
-      x: rect.left,
-      y: rect.bottom + 4 // 4px gap below element
+      x: initialX,
+      y: initialY
     }
+    
+    // Show the menu
+    showMenu.value = true
+    justOpened.value = true
+    
+    // Adjust position after render to handle viewport boundaries
+    adjustMenuPosition(initialX, initialY, rect)
   }
-
-  // Show the menu
-  showMenu.value = true
-  justOpened.value = true
   
   // Reset the flag after a short delay to allow outside click detection
   nextTick(() => {
