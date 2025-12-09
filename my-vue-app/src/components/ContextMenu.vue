@@ -22,6 +22,7 @@ const showMenu = ref(false)
 const menuPosition = ref({ x: 0, y: 0 })
 const containerRef = ref<HTMLElement | null>(null)
 const isDropdownMode = ref(false)
+const justOpened = ref(false)
 
 const handleContextMenu = (event: MouseEvent) => {
   if (props.on !== 'right-click') return
@@ -48,6 +49,13 @@ const handleClick = (event: MouseEvent) => {
   event.preventDefault()
   event.stopPropagation()
 
+  // Toggle the menu if it's already showing
+  if (showMenu.value) {
+    showMenu.value = false
+    justOpened.value = false
+    return
+  }
+
   isDropdownMode.value = true
 
   // Use the container element for positioning since it now wraps the content
@@ -63,18 +71,31 @@ const handleClick = (event: MouseEvent) => {
 
   // Show the menu
   showMenu.value = true
+  justOpened.value = true
+  
+  // Reset the flag after a short delay to allow outside click detection
+  nextTick(() => {
+    setTimeout(() => {
+      justOpened.value = false
+    }, 50)
+  })
 }
 
 const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  const menuElement = document.querySelector('.context-menu')
-  
-  // Don't close if clicking inside the container (for left-click mode)
-  if (containerRef.value?.contains(target)) {
+  // Don't close if the menu was just opened
+  if (justOpened.value) {
     return
   }
   
-  if (menuElement && !menuElement.contains(target)) {
+  const target = event.target as HTMLElement
+  const menuElement = document.querySelector('.context-menu')
+  
+  // Check if clicking outside both the menu and the container
+  const isOutsideMenu = menuElement && !menuElement.contains(target)
+  const isOutsideContainer = containerRef.value && !containerRef.value.contains(target)
+  
+  // Close if clicking outside both elements
+  if (isOutsideMenu && isOutsideContainer) {
     showMenu.value = false
   }
 }
