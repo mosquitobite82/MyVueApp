@@ -5,10 +5,11 @@ A flexible and customizable context menu component for Vue 3 that appears on rig
 ## Features
 
 ✅ **Wraps child components** - Works with any content using Vue slots  
+✅ **Left-click or right-click modes** - Choose between dropdown or context menu behavior  
 ✅ **Prevents default browser context menu** - Right-click shows your custom menu  
 ✅ **Flexible API** - Use props or custom slots for menu items  
 ✅ **TypeScript support** - Fully typed with TypeScript  
-✅ **Smart positioning** - Menu appears at cursor position  
+✅ **Smart positioning** - Menu appears at cursor position (right-click) or below element (left-click)  
 ✅ **Auto-close** - Closes on outside click or scroll  
 ✅ **Beautiful animations** - Smooth fade-in effect  
 
@@ -18,7 +19,7 @@ The component is already created in `src/components/ContextMenu.vue`. No additio
 
 ## Basic Usage
 
-### Method 1: Using Props (Simple Menu Items)
+### Method 1: Right-Click Context Menu (Default)
 
 ```vue
 <script setup lang="ts">
@@ -45,10 +46,53 @@ const menuItems = [
 </script>
 
 <template>
+  <!-- Default behavior: right-click to show menu -->
   <ContextMenu :menu-items="menuItems">
     <div class="my-content">
       Right-click me!
     </div>
+  </ContextMenu>
+  
+  <!-- Or explicitly specify right-click -->
+  <ContextMenu :menu-items="menuItems" on="right-click">
+    <div class="my-content">
+      Right-click me!
+    </div>
+  </ContextMenu>
+</template>
+```
+
+### Method 1b: Left-Click Dropdown Menu
+
+```vue
+<script setup lang="ts">
+import ContextMenu from './components/ContextMenu.vue'
+
+const menuItems = [
+  {
+    label: 'Profile Settings',
+    icon: '👤',
+    action: () => console.log('Profile clicked')
+  },
+  {
+    label: 'Notifications',
+    icon: '🔔',
+    action: () => console.log('Notifications clicked')
+  },
+  {
+    label: 'Sign Out',
+    icon: '🚪',
+    action: () => console.log('Sign out clicked')
+  }
+]
+</script>
+
+<template>
+  <!-- Left-click mode: shows as dropdown below the element -->
+  <ContextMenu :menu-items="menuItems" on="left-click">
+    <button>
+      ⚙️ Settings ▼
+    </button>
   </ContextMenu>
 </template>
 ```
@@ -108,6 +152,7 @@ const handleAction = (action: string, close: () => void) => {
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `menuItems` | `MenuItem[]` | `[]` | Array of menu items (optional if using custom slot) |
+| `on` | `'left-click' \| 'right-click'` | `'right-click'` | Trigger mode: 'right-click' shows menu at cursor, 'left-click' shows as dropdown below element |
 
 ### MenuItem Interface
 
@@ -129,7 +174,9 @@ interface MenuItem {
 
 ## Examples
 
-### Example 1: Simple Text Area
+### Right-Click Mode Examples
+
+#### Example 1: Simple Text Area
 
 ```vue
 <ContextMenu :menu-items="textMenuItems">
@@ -137,7 +184,7 @@ interface MenuItem {
 </ContextMenu>
 ```
 
-### Example 2: Image with Context Menu
+#### Example 2: Image with Context Menu
 
 ```vue
 <ContextMenu :menu-items="imageMenuItems">
@@ -145,7 +192,7 @@ interface MenuItem {
 </ContextMenu>
 ```
 
-### Example 3: Complex Card Component
+#### Example 3: Complex Card Component
 
 ```vue
 <ContextMenu :menu-items="cardMenuItems">
@@ -155,6 +202,65 @@ interface MenuItem {
     <button>Click me</button>
   </div>
 </ContextMenu>
+```
+
+### Left-Click Mode Examples
+
+#### Example 4: Settings Dropdown Button
+
+```vue
+<ContextMenu :menu-items="settingsItems" on="left-click">
+  <button class="settings-btn">
+    ⚙️ Settings ▼
+  </button>
+</ContextMenu>
+```
+
+#### Example 5: User Profile Dropdown
+
+```vue
+<script setup lang="ts">
+const profileItems = [
+  { label: 'View Profile', icon: '👤', action: () => {} },
+  { label: 'Settings', icon: '⚙️', action: () => {} },
+  { label: 'Sign Out', icon: '🚪', action: () => {} }
+]
+</script>
+
+<template>
+  <ContextMenu :menu-items="profileItems" on="left-click">
+    <div class="user-avatar">
+      <img src="avatar.jpg" alt="User" />
+      <span>John Doe ▼</span>
+    </div>
+  </ContextMenu>
+</template>
+```
+
+#### Example 6: Dropdown Menu Bar
+
+```vue
+<template>
+  <nav class="menu-bar">
+    <ContextMenu on="left-click">
+      <button>File ▼</button>
+      <template #menu="{ close }">
+        <button @click="close()">New</button>
+        <button @click="close()">Open</button>
+        <button @click="close()">Save</button>
+      </template>
+    </ContextMenu>
+    
+    <ContextMenu on="left-click">
+      <button>Edit ▼</button>
+      <template #menu="{ close }">
+        <button @click="close()">Cut</button>
+        <button @click="close()">Copy</button>
+        <button @click="close()">Paste</button>
+      </template>
+    </ContextMenu>
+  </nav>
+</template>
 ```
 
 ### Example 4: Custom Styled Menu
@@ -227,11 +333,34 @@ The component comes with default styles, but you can customize them:
 
 ## How It Works
 
+### Right-Click Mode (Default)
 1. **Wrapping**: The component wraps your content in a container that listens for `contextmenu` events
 2. **Event Prevention**: When right-click occurs, it prevents the default browser menu (`event.preventDefault()`)
 3. **Positioning**: The menu is positioned at the exact cursor coordinates using fixed positioning
 4. **Teleport**: Uses Vue's `<Teleport>` to render the menu at the document body level (prevents z-index issues)
 5. **Auto-close**: Listens for clicks outside the menu and scroll events to auto-close
+
+### Left-Click Mode
+1. **Wrapping**: The component wraps your content in a container that listens for `click` events
+2. **Event Handling**: When left-click occurs on the wrapped element, it triggers the menu
+3. **Dropdown Positioning**: The menu is positioned directly below the clicked element (dropdown style)
+4. **Teleport**: Uses Vue's `<Teleport>` to render the menu at the document body level
+5. **Auto-close**: Closes when clicking outside the element or menu, or on scroll
+
+## When to Use Which Mode
+
+### Use `on="right-click"` (Context Menu) when:
+- Working with content areas (text, images, cards)
+- Providing contextual actions for specific elements
+- User expects traditional right-click behavior
+- Space-saving is important (hidden until needed)
+
+### Use `on="left-click"` (Dropdown) when:
+- Creating navigation menus or menu bars
+- Building dropdown buttons or select-like controls
+- User profile or account menus
+- Actions need to be more discoverable
+- Creating toolbar dropdowns
 
 ## Best Practices
 
@@ -240,6 +369,8 @@ The component comes with default styles, but you can customize them:
 3. **Disable appropriately**: Use the `disabled` property for unavailable actions
 4. **Group related items**: Use dividers in custom slots for better organization
 5. **Test on different screen positions**: Ensure menu doesn't go off-screen at edges
+6. **Choose the right mode**: Use right-click for contextual actions, left-click for primary navigation/actions
+7. **Visual indicators**: Add arrow icons (▼) to left-click elements to indicate they're interactive
 
 ## Browser Compatibility
 

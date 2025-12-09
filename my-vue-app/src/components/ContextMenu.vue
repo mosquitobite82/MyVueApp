@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
 interface MenuItem {
   label: string
@@ -10,22 +10,29 @@ interface MenuItem {
 
 interface Props {
   menuItems?: MenuItem[]
+  on?: 'left-click' | 'right-click'
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  menuItems: () => []
+  menuItems: () => [],
+  on: 'right-click'
 })
 
 const showMenu = ref(false)
 const menuPosition = ref({ x: 0, y: 0 })
 const containerRef = ref<HTMLElement | null>(null)
+const isDropdownMode = ref(false)
 
 const handleContextMenu = (event: MouseEvent) => {
+  if (props.on !== 'right-click') return
+
   // Prevent the default browser context menu
   event.preventDefault()
   event.stopPropagation()
 
-  // Set menu position
+  isDropdownMode.value = false
+
+  // Set menu position at cursor
   menuPosition.value = {
     x: event.clientX,
     y: event.clientY
@@ -35,9 +42,37 @@ const handleContextMenu = (event: MouseEvent) => {
   showMenu.value = true
 }
 
+const handleClick = (event: MouseEvent) => {
+  if (props.on !== 'left-click') return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  isDropdownMode.value = true
+
+  // Use the container element for positioning since it now wraps the content
+  if (containerRef.value) {
+    const rect = containerRef.value.getBoundingClientRect()
+    
+    // Position below the element (dropdown style), aligned to left edge
+    menuPosition.value = {
+      x: rect.left,
+      y: rect.bottom + 4 // 4px gap below element
+    }
+  }
+
+  // Show the menu
+  showMenu.value = true
+}
+
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
   const menuElement = document.querySelector('.context-menu')
+  
+  // Don't close if clicking inside the container (for left-click mode)
+  if (containerRef.value?.contains(target)) {
+    return
+  }
   
   if (menuElement && !menuElement.contains(target)) {
     showMenu.value = false
@@ -68,7 +103,9 @@ onUnmounted(() => {
   <div 
     ref="containerRef"
     class="context-menu-container"
+    :class="{ 'left-click-mode': props.on === 'left-click' }"
     @contextmenu="handleContextMenu"
+    @click="handleClick"
   >
     <!-- Wrapped content goes here -->
     <slot></slot>
@@ -106,6 +143,11 @@ onUnmounted(() => {
 .context-menu-container {
   position: relative;
   display: contents;
+}
+
+.context-menu-container.left-click-mode {
+  display: inline-block;
+  vertical-align: top;
 }
 
 .context-menu {

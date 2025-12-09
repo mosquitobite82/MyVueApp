@@ -46,6 +46,53 @@ const handleCustomAction = (action: string, close: () => void) => {
   close()
   setTimeout(() => message.value = 'Right-click anywhere in this box!', 2000)
 }
+
+// Example 4: Left-click dropdown menu items
+const dropdownMessage = ref('Select an option')
+const selectedOption = ref<string | null>(null)
+
+const dropdownMenuItems = [
+  {
+    label: 'Profile Settings',
+    icon: '👤',
+    action: () => {
+      selectedOption.value = 'Profile'
+      dropdownMessage.value = 'Profile Settings selected'
+    }
+  },
+  {
+    label: 'Notifications',
+    icon: '🔔',
+    action: () => {
+      selectedOption.value = 'Notifications'
+      dropdownMessage.value = 'Notifications selected'
+    }
+  },
+  {
+    label: 'Privacy',
+    icon: '🔒',
+    action: () => {
+      selectedOption.value = 'Privacy'
+      dropdownMessage.value = 'Privacy selected'
+    }
+  },
+  {
+    label: 'Sign Out',
+    icon: '🚪',
+    action: () => {
+      selectedOption.value = 'Sign Out'
+      dropdownMessage.value = 'Signed out!'
+    }
+  }
+]
+
+// Example 5: Action buttons with left-click dropdowns
+const actionMessage = ref('No action taken yet')
+
+const handleActionDropdown = (action: string, close: () => void) => {
+  actionMessage.value = `Action: ${action} - Executed at ${new Date().toLocaleTimeString()}`
+  close()
+}
 </script>
 
 <template>
@@ -115,6 +162,158 @@ const handleCustomAction = (action: string, close: () => void) => {
           <p class="hint">Right-click anywhere here!</p>
         </div>
       </ContextMenu>
+    </div>
+
+    <hr class="section-divider" />
+    
+    <h2 style="margin-top: 40px;">Left-Click Mode (Dropdown)</h2>
+
+    <!-- Example 4: Left-click dropdown button -->
+    <div class="example">
+      <h3>Example 4: Dropdown Button (Left-Click)</h3>
+      <div class="dropdown-demo">
+        <ContextMenu :menu-items="dropdownMenuItems" on="left-click">
+          <button class="dropdown-button">
+            ⚙️ Settings
+            <span class="dropdown-arrow">▼</span>
+          </button>
+        </ContextMenu>
+        
+        <div class="status-display">
+          <p>{{ dropdownMessage }}</p>
+          <p v-if="selectedOption" class="selected-option">
+            Selected: <strong>{{ selectedOption }}</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Example 5: Multiple dropdown buttons -->
+    <div class="example">
+      <h3>Example 5: Multiple Dropdown Buttons</h3>
+      <div class="button-group">
+        <ContextMenu on="left-click">
+          <button class="dropdown-button dropdown-button-primary">
+            📁 File
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <template #menu="{ close }">
+            <div class="custom-menu">
+              <button class="custom-menu-item" @click="handleActionDropdown('New File', close)">
+                📄 New File
+              </button>
+              <button class="custom-menu-item" @click="handleActionDropdown('Open', close)">
+                📂 Open
+              </button>
+              <button class="custom-menu-item" @click="handleActionDropdown('Save', close)">
+                💾 Save
+              </button>
+              <div class="custom-menu-divider"></div>
+              <button class="custom-menu-item" @click="handleActionDropdown('Exit', close)">
+                🚪 Exit
+              </button>
+            </div>
+          </template>
+        </ContextMenu>
+
+        <ContextMenu on="left-click">
+          <button class="dropdown-button dropdown-button-primary">
+            ✂️ Edit
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <template #menu="{ close }">
+            <div class="custom-menu">
+              <button class="custom-menu-item" @click="handleActionDropdown('Cut', close)">
+                ✂️ Cut
+              </button>
+              <button class="custom-menu-item" @click="handleActionDropdown('Copy', close)">
+                📋 Copy
+              </button>
+              <button class="custom-menu-item" @click="handleActionDropdown('Paste', close)">
+                📄 Paste
+              </button>
+            </div>
+          </template>
+        </ContextMenu>
+
+        <ContextMenu on="left-click">
+          <button class="dropdown-button dropdown-button-primary">
+            👁️ View
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <template #menu="{ close }">
+            <div class="custom-menu">
+              <button class="custom-menu-item" @click="handleActionDropdown('Zoom In', close)">
+                🔍 Zoom In
+              </button>
+              <button class="custom-menu-item" @click="handleActionDropdown('Zoom Out', close)">
+                🔎 Zoom Out
+              </button>
+              <button class="custom-menu-item" @click="handleActionDropdown('Full Screen', close)">
+                ⛶ Full Screen
+              </button>
+            </div>
+          </template>
+        </ContextMenu>
+      </div>
+      
+      <div class="status-display">
+        <p>{{ actionMessage }}</p>
+      </div>
+    </div>
+
+    <!-- Example 6: User profile dropdown -->
+    <div class="example">
+      <h3>Example 6: User Profile Dropdown</h3>
+      <div class="profile-demo">
+        <ContextMenu on="left-click">
+          <div class="user-profile-button">
+            <img 
+              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
+              alt="User Avatar"
+              class="avatar"
+            />
+            <div class="user-info">
+              <div class="user-name">John Doe</div>
+              <div class="user-email">john@example.com</div>
+            </div>
+            <span class="dropdown-arrow">▼</span>
+          </div>
+          
+          <template #menu="{ close }">
+            <div class="profile-menu">
+              <div class="profile-menu-header">
+                <img 
+                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
+                  alt="User Avatar"
+                  class="avatar-large"
+                />
+                <div>
+                  <div class="profile-name">John Doe</div>
+                  <div class="profile-email">john@example.com</div>
+                </div>
+              </div>
+              <div class="custom-menu-divider"></div>
+              <button class="custom-menu-item" @click="close()">
+                👤 View Profile
+              </button>
+              <button class="custom-menu-item" @click="close()">
+                ⚙️ Settings
+              </button>
+              <button class="custom-menu-item" @click="close()">
+                💳 Billing
+              </button>
+              <div class="custom-menu-divider"></div>
+              <button class="custom-menu-item" @click="close()">
+                ❓ Help & Support
+              </button>
+              <button class="custom-menu-item danger" @click="close()">
+                🚪 Sign Out
+              </button>
+            </div>
+          </template>
+        </ContextMenu>
+      </div>
     </div>
   </div>
 </template>
@@ -244,6 +443,173 @@ h3 {
   height: 1px;
   background-color: #e0e0e0;
   margin: 6px 0;
+}
+
+/* Section divider */
+.section-divider {
+  margin: 50px 0;
+  border: none;
+  border-top: 2px solid #e0e0e0;
+}
+
+/* Dropdown button styles */
+.dropdown-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.dropdown-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 2px solid #3498db;
+  border-radius: 8px;
+  color: #3498db;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-button:hover {
+  background: #3498db;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.dropdown-button-primary {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.dropdown-button-primary:hover {
+  background: #2980b9;
+  border-color: #2980b9;
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  margin-left: 4px;
+  transition: transform 0.2s;
+}
+
+.dropdown-button:hover .dropdown-arrow {
+  transform: translateY(2px);
+}
+
+.status-display {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.status-display p {
+  margin: 5px 0;
+  color: #2c3e50;
+}
+
+.selected-option {
+  color: #3498db !important;
+  font-size: 14px;
+}
+
+/* Button group */
+.button-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Profile dropdown styles */
+.profile-demo {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.user-profile-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 250px;
+}
+
+.user-profile-button:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #3498db;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3498db;
+}
+
+.avatar-large {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3498db;
+}
+
+.user-info {
+  flex: 1;
+  text-align: left;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.user-email {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.profile-menu {
+  padding: 8px;
+  min-width: 250px;
+}
+
+.profile-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 4px;
+}
+
+.profile-name {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 15px;
+}
+
+.profile-email {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-top: 2px;
 }
 </style>
 
