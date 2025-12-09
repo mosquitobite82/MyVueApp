@@ -1,76 +1,169 @@
-<template>
-  <Teleport to="body">
-    <!-- Hidden activator element positioned at cursor -->
-    <div
-      v-if="visible"
-      ref="activatorRef"
-      :style="`position: fixed; left: ${x}px; top: ${y}px; width: 0; height: 0; pointer-events: none;`"
-    ></div>
-
-    <v-menu
-      v-model="isVisible"
-      :activator="activatorRef"
-      location="bottom end"
-      :close-on-content-click="true"
-      :z-index="2000"
-    >
-      <v-list>
-        <template v-for="(item, index) in menuItems" :key="index">
-          <v-divider v-if="item.divider" />
-          <v-list-item
-            v-else
-            @click="handleItemClick(item)"
-          >
-            <v-list-item-title>
-              <v-icon v-if="item.icon" start>{{ item.icon }}</v-icon>
-              {{ item.title }}
-            </v-list-item-title>
-          </v-list-item>
-        </template>
-      </v-list>
-    </v-menu>
-  </Teleport>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
-export interface MenuItem {
-  title?: string
-  action?: string
+interface MenuItem {
+  label: string
   icon?: string
-  divider?: boolean
+  action: () => void
+  disabled?: boolean
 }
 
 interface Props {
-  visible: boolean
-  x: number
-  y: number
-  items: MenuItem[]
+  menuItems?: MenuItem[]
 }
 
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  'update:visible': [value: boolean]
-  'item-click': [item: MenuItem]
-}>()
-
-const activatorRef = ref<HTMLElement>()
-
-const isVisible = computed({
-  get: () => props.visible,
-  set: (value: boolean) => emit('update:visible', value)
+const props = withDefaults(defineProps<Props>(), {
+  menuItems: () => []
 })
 
-const menuItems = computed(() => props.items)
+const showMenu = ref(false)
+const menuPosition = ref({ x: 0, y: 0 })
+const containerRef = ref<HTMLElement | null>(null)
 
-const handleItemClick = (item: MenuItem) => {
-  emit('item-click', item)
-  emit('update:visible', false)
+const handleContextMenu = (event: MouseEvent) => {
+  // Prevent the default browser context menu
+  event.preventDefault()
+  event.stopPropagation()
+
+  // Set menu position
+  menuPosition.value = {
+    x: event.clientX,
+    y: event.clientY
+  }
+
+  // Show the menu
+  showMenu.value = true
 }
+
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  const menuElement = document.querySelector('.context-menu')
+  
+  if (menuElement && !menuElement.contains(target)) {
+    showMenu.value = false
+  }
+}
+
+const handleMenuItemClick = (item: MenuItem) => {
+  if (!item.disabled) {
+    item.action()
+    showMenu.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+  // Also hide menu on scroll
+  document.addEventListener('scroll', () => {
+    showMenu.value = false
+  }, true)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
+<template>
+  <div 
+    ref="containerRef"
+    class="context-menu-container"
+    @contextmenu="handleContextMenu"
+  >
+    <!-- Wrapped content goes here -->
+    <slot></slot>
+
+    <!-- Context Menu -->
+    <Teleport to="body">
+      <div
+        v-if="showMenu"
+        class="context-menu"
+        :style="{
+          top: `${menuPosition.y}px`,
+          left: `${menuPosition.x}px`
+        }"
+      >
+        <!-- Custom menu items slot -->
+        <slot name="menu" :close="() => showMenu = false">
+          <!-- Default menu items if provided via props -->
+          <div
+            v-for="(item, index) in menuItems"
+            :key="index"
+            class="menu-item"
+            :class="{ disabled: item.disabled }"
+            @click="handleMenuItemClick(item)"
+          >
+            <span v-if="item.icon" class="menu-icon">{{ item.icon }}</span>
+            <span class="menu-label">{{ item.label }}</span>
+          </div>
+        </slot>
+      </div>
+    </Teleport>
+  </div>
+</template>
+
 <style scoped>
-/* Vuetify handles all the styling */
+.context-menu-container {
+  position: relative;
+  display: contents;
+}
+
+.context-menu {
+  position: fixed;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+  min-width: 180px;
+  z-index: 9999;
+  animation: fadeIn 0.15s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  user-select: none;
+}
+
+.menu-item:hover:not(.disabled) {
+  background-color: #f0f0f0;
+}
+
+.menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.menu-icon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.menu-label {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.menu-item.disabled .menu-label {
+  color: #999;
+}
 </style>
+
