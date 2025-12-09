@@ -98,9 +98,17 @@ const handleContextMenu = (event: MouseEvent) => {
 
   // Show the menu
   showMenu.value = true
+  justOpened.value = true
   
   // Adjust position after render
   adjustMenuPosition(initialX, initialY)
+  
+  // Reset the flag after a short delay to allow outside click detection
+  nextTick(() => {
+    setTimeout(() => {
+      justOpened.value = false
+    }, 50)
+  })
 }
 
 const handleClick = (event: MouseEvent) => {
@@ -156,12 +164,22 @@ const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
   const menuElement = document.querySelector('.context-menu')
   
-  // Check if clicking outside both the menu and the container
+  // Check if clicking outside the menu
   const isOutsideMenu = menuElement && !menuElement.contains(target)
-  const isOutsideContainer = containerRef.value && !containerRef.value.contains(target)
   
-  // Close if clicking outside both elements
-  if (isOutsideMenu && isOutsideContainer) {
+  if (!isOutsideMenu) {
+    return // Clicked inside menu, don't close
+  }
+  
+  // For left-click mode: only close if also clicking outside the container
+  // (to allow the toggle functionality to work)
+  if (props.on === 'left-click') {
+    const isOutsideContainer = containerRef.value && !containerRef.value.contains(target)
+    if (isOutsideContainer) {
+      showMenu.value = false
+    }
+  } else {
+    // For right-click mode: close on any click outside the menu
     showMenu.value = false
   }
 }
