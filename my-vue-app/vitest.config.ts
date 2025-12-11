@@ -9,6 +9,17 @@ export default mergeConfig(
       environment: 'jsdom',
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
+      globals: true,
+      css: {
+        modules: {
+          classNameStrategy: 'non-scoped',
+        },
+      },
+      server: {
+        deps: {
+          inline: ['vuetify'],
+        },
+      },
     },
   }),
 )
