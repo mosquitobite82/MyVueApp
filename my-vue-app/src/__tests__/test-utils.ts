@@ -17,6 +17,25 @@ globalThis.IntersectionObserver = class IntersectionObserver {
   disconnect() {}
 }
 
+// Mock visualViewport for tests
+if (!globalThis.visualViewport) {
+  Object.defineProperty(globalThis, 'visualViewport', {
+    value: {
+      width: 1024,
+      height: 768,
+      offsetLeft: 0,
+      offsetTop: 0,
+      pageLeft: 0,
+      pageTop: 0,
+      scale: 1,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    },
+    writable: true,
+    configurable: true,
+  })
+}
+
 export function createVuetifyInstance() {
   return createVuetify({
     components,
