@@ -82,6 +82,15 @@ const handleMenuItemClick = (item: MenuItem) => {
 
 // Location strategy for v-menu (only used in left-click mode)
 const menuLocation = 'bottom start'
+
+// Expose for testing
+defineExpose({
+  showMenu,
+  menuPosition,
+  virtualActivatorRef,
+  handleMenuItemClick,
+  handleMenuClose,
+})
 </script>
 
 <template>
