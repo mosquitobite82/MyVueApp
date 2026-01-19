@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useBackendConnection } from '@/composables/useBackendConnection';
+import TextInput from './form/TextInput.vue';
+import ConnectionStatus from './alert/ConnectionStatus.vue';
 
 const { backendStore, connectionError, isConnecting, retry } = useBackendConnection();
 
@@ -30,13 +32,10 @@ const handleFocus = async (hasFocus: boolean) => {
   }
 };
 
-const handleInput = async (event: Event) => {
+const handleInput = async (newValue : string) => {
   if (!isConnected.value) return;
   
-  const target = event.target as HTMLInputElement;
   const oldValue = inputValue.value;
-  const newValue = target.value;
-  
   inputValue.value = newValue;
   
   try {
@@ -72,63 +71,27 @@ const handleClearError = () => {
       <v-card-title>Backend State Store Demo</v-card-title>
       
       <v-card-text>
-        <!-- Connection Status -->
-        <v-alert
-          v-if="isConnecting"
-          type="info"
-          variant="tonal"
-          class="mb-4"
-        >
-          Connecting to backend...
-        </v-alert>
+        <ConnectionStatus
+          :is-connecting="isConnecting"
+          :is-connected="isConnected"
+          :error="error"
+          :handle-retry="handleRetry"
+        />
 
-        <v-alert
-          v-else-if="!isConnected"
-          type="warning"
-          variant="tonal"
-          class="mb-4"
-        >
-          <div class="d-flex align-center justify-space-between">
-            <span>Not connected to backend</span>
-            <v-btn
-              size="small"
-              color="primary"
-              @click="handleRetry"
-            >
-              Retry
-            </v-btn>
-          </div>
-        </v-alert>
-
-        <v-alert
-          v-else
-          type="success"
-          variant="tonal"
-          class="mb-4"
-        >
-          Connected to backend
-        </v-alert>
-
-        <!-- Error Display -->
-        <v-alert
-          v-if="error"
-          type="error"
-          variant="tonal"
-          closable
-          class="mb-4"
-          @click:close="handleClearError"
-        >
-          {{ error }}
-        </v-alert>
+        <ErrorDisplay
+          :error="error"
+          :handle-clear-error="handleClearError"
+        />
 
         <!-- Demo Input -->
         <div class="mb-6">
-          <v-text-field
-            v-model="inputValue"
+          <TextInput
+            :input-value="inputValue"
             label="Type something..."
-            hint="Changes will be sent to backend and trigger state updates"
-            persistent-hint
+            placeholder="Type something..."
             :disabled="!isConnected"
+            :error-messages="[]"
+            :rules="[]"
             @focus="handleFocus(true)"
             @blur="handleFocus(false)"
             @input="handleInput"

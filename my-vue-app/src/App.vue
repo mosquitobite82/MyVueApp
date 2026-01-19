@@ -12,9 +12,9 @@ const showMockSignalRDemo = ref(true);
 <template>
   <v-app>
     <v-main>
-      <!-- <BackendStateDemo /> -->
-      <VuetifyContextMenuDemo />
-      <ClickableWithMenuDemo />
+      <BackendStateDemo />
+      <!-- <VuetifyContextMenuDemo /> -->
+      <!-- <ClickableWithMenuDemo /> -->
     </v-main>
   </v-app>
 </template>
