@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useBackendConnection } from '@/composables/useBackendConnection';
-import TextInput from './form/TextInput.vue';
+import Form from './form/Form.vue';
 import ConnectionStatus from './alert/ConnectionStatus.vue';
+import Statistics from './Statistics.vue';
+import EntityList from './EntityList.vue';
 
 const { backendStore, connectionError, isConnecting, retry } = useBackendConnection();
 
@@ -21,30 +23,27 @@ const lastUpdate = computed(() => {
 });
 
 // Event handlers
-const handleFocus = async (hasFocus: boolean) => {
+const handleFocus = async (newValue: {inputId: string, hasFocus: boolean}) => {
   if (!isConnected.value) return;
   
   try {
-    await backendStore.sendFocusChange(elementId, hasFocus);
-    console.log(`Focus ${hasFocus ? 'gained' : 'lost'} on ${elementId}`);
+    await backendStore.sendFocusChange(newValue.inputId, newValue.hasFocus);
+    console.log(`Focus ${newValue.hasFocus ? 'gained' : 'lost'} on ${newValue.inputId}`);
   } catch (err) {
     console.error('Failed to send focus event:', err);
   }
 };
 
-const handleInput = async (newValue : string) => {
+const handleInput = async (update : {inputId: string, val: string, oldValue: string}) => {
   if (!isConnected.value) return;
   
-  const oldValue = inputValue.value;
-  inputValue.value = newValue;
-  
   try {
-    await backendStore.sendValueChange(elementId, oldValue, newValue);
-    console.log(`Value changed from "${oldValue}" to "${newValue}"`);
+    await backendStore.sendValueChange(update.inputId, update.oldValue, update.val);
+    console.log(`Value changed from "${update.oldValue}" to "${update.val}"`);
   } catch (err) {
     console.error('Failed to send value change:', err);
     // Revert on error
-    inputValue.value = oldValue;
+    inputValue.value = update.oldValue;
   }
 };
 
@@ -83,88 +82,12 @@ const handleClearError = () => {
           :handle-clear-error="handleClearError"
         />
 
-        <!-- Demo Input -->
         <div class="mb-6">
-          <TextInput
-            :input-value="inputValue"
-            label="Type something..."
-            placeholder="Type something..."
-            :disabled="!isConnected"
-            :error-messages="[]"
-            :rules="[]"
-            @focus="handleFocus(true)"
-            @blur="handleFocus(false)"
-            @input="handleInput"
-          />
+          <Form :is-connected="isConnected" @form-change="handleInput" @focus-change="handleFocus" />
         </div>
+        <Statistics />
 
-        <!-- Statistics -->
-        <v-row class="mb-4">
-          <v-col cols="12" md="4">
-            <v-card variant="outlined">
-              <v-card-text class="text-center">
-                <div class="text-h4 mb-2">{{ entityCount }}</div>
-                <div class="text-caption">Entities</div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-card variant="outlined">
-              <v-card-text class="text-center">
-                <div class="text-h4 mb-2">
-                  <v-icon :color="isConnected ? 'success' : 'error'">
-                    {{ isConnected ? 'mdi-check-circle' : 'mdi-alert-circle' }}
-                  </v-icon>
-                </div>
-                <div class="text-caption">Connection</div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-card variant="outlined">
-              <v-card-text class="text-center">
-                <div class="text-body-2 mb-2">{{ lastUpdate }}</div>
-                <div class="text-caption">Last Update</div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- Entity List -->
-        <div>
-          <div class="d-flex align-center justify-space-between mb-3">
-            <h3 class="text-h6">Backend Entities</h3>
-            <v-btn
-              size="small"
-              variant="outlined"
-              :disabled="entityCount === 0"
-              @click="handleClearEntities"
-            >
-              Clear All
-            </v-btn>
-          </div>
-
-          <v-alert
-            v-if="entityCount === 0"
-            type="info"
-            variant="tonal"
-          >
-            No entities yet. Type in the input above to create some!
-          </v-alert>
-
-          <v-list v-else lines="two">
-            <v-list-item
-              v-for="entity in entities"
-              :key="entity.id"
-              :title="entity.id"
-              :subtitle="JSON.stringify(entity, null, 2)"
-            >
-              <template #prepend>
-                <v-icon>mdi-database</v-icon>
-              </template>
-            </v-list-item>
-          </v-list>
-        </div>
+        <EntityList />
       </v-card-text>
     </v-card>
   </v-container>
