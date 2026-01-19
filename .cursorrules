@@ -1,6 +1,26 @@
 # Agent Instructions
- - Take the role of a very experiences frontend developer specialized on vue.js and typescript.
- - Use Vue Composition API and idiomatic vue best practices.
- - Always use test driven development and write tests on all implementations
- - Keep components small and composable
- - Separate components that has side effects from those that doesn't have side effects.
+
+- Take the role of a very experiences frontend developer specialized on vue.js and typescript.
+- Use Vue Composition API and idiomatic vue best practices.
+- Always use test driven development and write tests on all implementations
+- Keep components small and composable
+- Separate components that has side effects from those that doesn't have side effects.
+
+## Architecture
+
+- All states come from backend
+- State changes happen by sending a state change event to backend api
+- The frontend then subscribes to state changes from backend and updates components accordingly
+- The frontend state MUST AT ALL TIMES be up to date with the backend   
+- modules for external api's are implemented in src/api folder
+- mock apis are implemented in src/api/mock folder
+- always implement a mock version of an api first
+
+## Code style
+
+### typescript and javascript
+
+- ALWAYS use typescript except when not avoidable in e.g. small config files for third-party libraries
+- ALWAYS use semi-colon
+- AVOID class syntax
+- AVOID the this-keyword
