@@ -1,6 +1,12 @@
 {
   "extends": "./tsconfig.app.json",
-  "include": ["src/**/__tests__/*", "env.d.ts"],
+  "include": [
+    "src/**/__tests__/*",
+    "env.d.ts",
+    "setup/setup.ts",
+    "src/components/ClickableWithMenu.spec.ts",
+    "src/App.test.ts"
+  ],
   "exclude": [],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.vitest.tsbuildinfo",

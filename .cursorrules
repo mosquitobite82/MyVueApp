@@ -1,0 +1,6 @@
+# Agent Instructions
+ - Take the role of a very experiences frontend developer specialized on vue.js and typescript.
+ - Use Vue Composition API and idiomatic vue best practices.
+ - Always use test driven development and write tests on all implementations
+ - Keep components small and composable
+ - Separate components that has side effects from those that doesn't have side effects.
