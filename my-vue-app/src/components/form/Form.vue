@@ -14,9 +14,18 @@
       @blur="handleFocus({inputId: input.inputId, hasFocus: false})"
       @input-update="handleTextUpdate({inputId: input.inputId, val: $event.val})"
       />
+
+      <v-checkbox
+        v-if="input.inputType === 'checkbox'"
+        :input-id="input.inputId"
+        :input-value="input.inputValue"
+        label="Check me"
+        @change="handleCheckboxUpdate({inputId: input.inputId, val: $event.val})"
+      />
     </template>
   </div>
 </template>
+
 <script setup lang="ts">
   import { ref } from 'vue';
 import TextInput from './TextInput.vue';
@@ -39,7 +48,15 @@ import TextInput from './TextInput.vue';
   const emitFocusChange = (newValue: {inputId: string, hasFocus: boolean}) => {
     emit('focus-change', newValue);
   };
-
+  const handleCheckboxUpdate = (newValue: {inputId: string, val: boolean}) => {
+    const input = form.value.find(input => input.inputId === newValue.inputId);
+    if (!input) {
+      throw new Error(`Input not found for inputId: ${newValue.inputId}`);
+    }
+    const oldValue = input.inputValue.toString();
+    input.inputValue = newValue.val.toString();
+    emitFormChange({inputId: newValue.inputId, val: newValue.val.toString(), oldValue: oldValue});
+  };
   const handleTextUpdate = (newValue: {inputId: string, val: string}) => {
     const input = form.value.find(input => input.inputId === newValue.inputId);
     if (!input) {

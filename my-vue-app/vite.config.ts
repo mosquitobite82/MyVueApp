@@ -6,10 +6,18 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import vuetify from 'vite-plugin-vuetify'
 
 // https://vite.dev/config/
+// Detect if we're running in Storybook context
+const isStorybook = 
+  process.env.STORYBOOK === 'true' 
+  || process.env.npm_lifecycle_event?.includes('storybook') 
+  || process.argv.some(arg => arg.includes('storybook'));
+
 export default defineConfig({
   plugins: [
     vue(),
-    vueDevTools(),
+    // Exclude vite-plugin-vue-devtools when running Storybook
+    // (it pulls in vite-plugin-inspect which breaks with Vite 7's env API)
+    ...(isStorybook ? [] : [vueDevTools()]),
     vuetify({ autoImport: true }),
   ],
   resolve: {
