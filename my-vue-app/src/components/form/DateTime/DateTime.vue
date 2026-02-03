@@ -10,12 +10,12 @@
         hide-details
         density="comfortable"
         @blur="parseInput"
-        @keydown.enter.prevent="onActivatorEnter"
-      />
+        @keydown.down.prevent="onActivatorArrowDown"
+      /> 
     </template>
     <div
       class="d-flex flex-column flex-sm-row"
-      @keydown.enter.prevent="closeMenu"
+      @keydown.up.prevent="closeMenu"
     >
       <v-date-picker
         :model-value="valueAsDate"
@@ -146,7 +146,7 @@ function parseInput() {
   model.value = dateToDateTime(date);
 }
 
-function onActivatorEnter() {
+function onActivatorArrowDown() {
   parseInput();
   menuOpen.value = true;
 }

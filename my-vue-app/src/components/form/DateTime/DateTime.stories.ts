@@ -22,7 +22,7 @@ export const Default: Story = {
     setup() {
       return { args }
     },
-    template: '<DateTime v-bind="args" />',
+    template: `<DateTime v-bind="args" />`,
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
