@@ -5,11 +5,10 @@
         ref="activatorRef"
         v-bind="props"
         :readonly="menuOpen"
-        :model-value="inputValue"
+        v-model="inputValue"
         :placeholder="placeholder"
         hide-details
         density="comfortable"
-        @update:model-value="inputValue = $event"
         @blur="parseInput"
         @keydown.enter.prevent="onActivatorEnter"
       />
@@ -56,6 +55,7 @@ const activatorRef = ref<{ focus?: () => void } | null>(null);
 const inputValue = ref('');
 
 const pad = (n: number) => String(n).padStart(2, '0');
+const DATE_TIME_RE = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?$/;
 
 function dateTimeToDate(d: DateTime): Date {
   return new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.second, 0);
@@ -117,35 +117,28 @@ function closeMenu() {
   nextTick(() => (menuOpen.value = false));
 }
 
-watch(menuOpen, (open) => {
-  if (!open) nextTick(() => activatorRef.value?.focus?.());
-});
+watch(menuOpen, (open) => !open && nextTick(() => activatorRef.value?.focus?.()));
 
 const displayValue = computed(() => {
   const d = value.value;
-  return d ? `${d.year}-${pad(d.month)}-${pad(d.day)} ${pad(d.hour)}:${pad(d.minute)}` : '';
+  return !d ? '' : `${d.year}-${pad(d.month)}-${pad(d.day)} ${pad(d.hour)}:${pad(d.minute)}`;
 });
 
-watch(value, () => {
-  inputValue.value = displayValue.value;
-}, { immediate: true });
+watch(value, () => (inputValue.value = displayValue.value), { immediate: true });
 
-/** Parse "YYYY-MM-DD HH:mm" or "YYYY-MM-DD", update model if valid. */
 function parseInput() {
   const s = inputValue.value.trim();
   if (!s) {
     model.value = null;
     return;
   }
-  const withTime = /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2})$/.exec(s);
-  const dateOnly = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
-  const parts = withTime ?? dateOnly;
-  if (!parts) {
+  const m = DATE_TIME_RE.exec(s);
+  if (!m) {
     inputValue.value = displayValue.value;
     return;
   }
-  const [, y, mo, d, h = '0', mi = '0'] = parts;
-  const date = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), 0, 0);
+  const [, y, mo, d, h, mi] = m;
+  const date = new Date(Number(y), Number(mo) - 1, Number(d), Number(h ?? 0), Number(mi ?? 0), 0, 0);
   if (isNaN(date.getTime())) {
     inputValue.value = displayValue.value;
     return;
@@ -154,10 +147,8 @@ function parseInput() {
 }
 
 function onActivatorEnter() {
-  if (!menuOpen.value) {
-    parseInput();
-    menuOpen.value = true;
-  }
+  parseInput();
+  menuOpen.value = true;
 }
 </script>
   
