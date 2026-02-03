@@ -2,15 +2,20 @@
   <v-menu v-model="menuOpen" :close-on-content-click="false" location="bottom">
     <template #activator="{ props }">
       <v-text-field
+        ref="activatorRef"
         v-bind="props"
         readonly
         :model-value="displayValue"
         :placeholder="placeholder"
         hide-details
         density="comfortable"
+        @keydown.enter.prevent="menuOpen = true"
       />
     </template>
-    <div class="d-flex flex-column flex-sm-row">  
+    <div
+      class="d-flex flex-column flex-sm-row"
+      @keydown.enter.prevent="closeMenu"
+    >
       <v-date-picker
         :model-value="valueAsDate"
         @update:model-value="onDate"
@@ -26,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 
 type Month = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 export type DateTime = {
@@ -43,20 +48,9 @@ const props = defineProps<{
   placeholder?: string;
   initialValue?: DateTime | Date | null;
 }>();
+
 const menuOpen = ref(false);
-
-function normalizeToDateTime(v: DateTime | Date | null | undefined): DateTime | null {
-  if (v == null) return null;
-  return v instanceof Date ? dateToDateTime(v) : v;
-}
-
-/** Current value: model if set, otherwise initialValue (normalized to DateTime). */
-const value = computed<DateTime | null>(
-  () => model.value ?? normalizeToDateTime(props.initialValue) ?? null,
-);
-
-/** Value as Date for Vuetify pickers (they expect Date). */
-const valueAsDate = computed<Date | null>(() => (value.value ? dateTimeToDate(value.value) : null));
+const activatorRef = ref<{ focus?: () => void } | null>(null);
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -65,16 +59,28 @@ function dateTimeToDate(d: DateTime): Date {
 }
 
 function dateToDateTime(d: Date): DateTime {
-  const month = d.getMonth() + 1;
+  const m = d.getMonth() + 1;
   return {
     year: d.getFullYear(),
-    month: month as DateTime['month'],
+    month: m as DateTime['month'],
     day: d.getDate(),
     hour: d.getHours(),
     minute: d.getMinutes(),
     second: d.getSeconds(),
   };
 }
+
+function toDateTime(v: DateTime | Date | null | undefined): DateTime | null {
+  if (v == null) return null;
+  return v instanceof Date ? dateToDateTime(v) : v;
+}
+
+const value = computed<DateTime | null>(
+  () => model.value ?? toDateTime(props.initialValue) ?? null,
+);
+const valueAsDate = computed<Date | null>(() =>
+  value.value ? dateTimeToDate(value.value) : null,
+);
 
 function merge(date: Date | null, time: Date | null): Date | null {
   if (!date) return time;
@@ -92,23 +98,29 @@ function toTimeDate(v: Date | string): Date {
   return d;
 }
 
-function onDate(v: Date | null) {
-  const current = valueAsDate.value;
-  const merged = merge(v, current);
+function commit(merged: Date | null) {
   model.value = merged ? dateToDateTime(merged) : null;
+}
+
+function onDate(v: Date | null) {
+  commit(merge(v, valueAsDate.value));
 }
 
 function onTime(v: Date | string | null) {
-  if (v == null) return;
-  const current = valueAsDate.value ?? new Date();
-  const merged = merge(current, toTimeDate(v));
-  model.value = merged ? dateToDateTime(merged) : null;
+  if (v != null) commit(merge(valueAsDate.value ?? new Date(), toTimeDate(v)));
 }
+
+function closeMenu() {
+  nextTick(() => (menuOpen.value = false));
+}
+
+watch(menuOpen, (open) => {
+  if (!open) nextTick(() => activatorRef.value?.focus?.());
+});
 
 const displayValue = computed(() => {
   const d = value.value;
-  if (!d) return '';
-  return `${d.year}-${pad(d.month)}-${pad(d.day)} ${pad(d.hour)}:${pad(d.minute)}`;
+  return d ? `${d.year}-${pad(d.month)}-${pad(d.day)} ${pad(d.hour)}:${pad(d.minute)}` : '';
 });
 </script>
   
