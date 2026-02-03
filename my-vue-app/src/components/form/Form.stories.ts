@@ -38,6 +38,8 @@ export const Primary: Story = {
           input-id="password"
           input-value=""
           label="Password"
+          type="password"
+          role="textbox"
           placeholder="Enter your password"
           :disabled="false"
           :rules="[]"
@@ -54,9 +56,6 @@ export const Primary: Story = {
     `,
   }),
   play: async ({ canvasElement }) => {
-
-      
-      
     const canvas = within(canvasElement);
     const textboxes = canvas.getAllByRole('textbox');
       

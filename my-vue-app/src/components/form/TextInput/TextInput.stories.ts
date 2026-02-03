@@ -22,7 +22,9 @@ export const Primary: Story = {
     setup() {
       return { args }
     },
-    template: '<TextInput v-bind="args" />',
+    template: `
+      <TextInput v-bind="args" />
+      `,
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
