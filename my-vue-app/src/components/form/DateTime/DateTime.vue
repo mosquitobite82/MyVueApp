@@ -4,12 +4,14 @@
       <v-text-field
         ref="activatorRef"
         v-bind="props"
-        readonly
-        :model-value="displayValue"
+        :readonly="menuOpen"
+        :model-value="inputValue"
         :placeholder="placeholder"
         hide-details
         density="comfortable"
-        @keydown.enter.prevent="menuOpen = true"
+        @update:model-value="inputValue = $event"
+        @blur="parseInput"
+        @keydown.enter.prevent="onActivatorEnter"
       />
     </template>
     <div
@@ -51,6 +53,7 @@ const props = defineProps<{
 
 const menuOpen = ref(false);
 const activatorRef = ref<{ focus?: () => void } | null>(null);
+const inputValue = ref('');
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -122,5 +125,39 @@ const displayValue = computed(() => {
   const d = value.value;
   return d ? `${d.year}-${pad(d.month)}-${pad(d.day)} ${pad(d.hour)}:${pad(d.minute)}` : '';
 });
+
+watch(value, () => {
+  inputValue.value = displayValue.value;
+}, { immediate: true });
+
+/** Parse "YYYY-MM-DD HH:mm" or "YYYY-MM-DD", update model if valid. */
+function parseInput() {
+  const s = inputValue.value.trim();
+  if (!s) {
+    model.value = null;
+    return;
+  }
+  const withTime = /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2})$/.exec(s);
+  const dateOnly = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
+  const parts = withTime ?? dateOnly;
+  if (!parts) {
+    inputValue.value = displayValue.value;
+    return;
+  }
+  const [, y, mo, d, h = '0', mi = '0'] = parts;
+  const date = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), 0, 0);
+  if (isNaN(date.getTime())) {
+    inputValue.value = displayValue.value;
+    return;
+  }
+  model.value = dateToDateTime(date);
+}
+
+function onActivatorEnter() {
+  if (!menuOpen.value) {
+    parseInput();
+    menuOpen.value = true;
+  }
+}
 </script>
   
