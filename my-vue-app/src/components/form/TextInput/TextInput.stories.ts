@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 
 import TextInput from './TextInput.vue'
-import { fn } from 'storybook/test'
+import { action } from 'storybook/actions';
+import { userEvent, within } from 'storybook/test';
 
 const meta = {
   component: TextInput,
@@ -23,6 +24,12 @@ export const Primary: Story = {
     },
     template: '<TextInput v-bind="args" />',
   }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.type(canvas.getByRole('textbox'), 'Hello', { delay: 100 });
+    await userEvent.click(canvas.getByRole('textbox'));
+    await userEvent.click(canvas.getByRole('textbox'));
+  },
   args: {
     inputId: 'inputId',
     inputValue: 'Tjo',
@@ -31,7 +38,8 @@ export const Primary: Story = {
     disabled: false,
     errorMessages: [],
     rules: [],
-    onFocus: fn(),
-    onBlur: fn(),
+    onFocus: action('focus'),
+    onBlur: action('blur'),
+    style: 'width: 300px;',
   },
 }
