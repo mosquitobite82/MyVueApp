@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import ContextMenu from './ContextMenu.vue'
+import { ContextMenu } from './context-menu'
 
 interface Product {
   id: number
@@ -21,12 +21,12 @@ const contextMenuItems = [
   {
     label: 'Add to Cart',
     icon: '🛒',
-    action: () => emit('addToCart', props.product)
+    action: () => emit('addToCart', props.product),
   },
   {
     label: 'View Details',
     icon: '👁️',
-    action: () => emit('viewDetails', props.product)
+    action: () => emit('viewDetails', props.product),
   },
   {
     label: 'Share',
@@ -34,7 +34,7 @@ const contextMenuItems = [
     action: () => {
       console.log('Share product:', props.product.name)
       // Implement share functionality
-    }
+    },
   },
   {
     label: 'Add to Wishlist',
@@ -42,13 +42,13 @@ const contextMenuItems = [
     action: () => {
       console.log('Added to wishlist:', props.product.name)
       // Implement wishlist functionality
-    }
+    },
   },
   {
     label: 'Remove',
     icon: '🗑️',
-    action: () => emit('removeFromCart', props.product)
-  }
+    action: () => emit('removeFromCart', props.product),
+  },
 ]
 </script>
 
@@ -56,20 +56,16 @@ const contextMenuItems = [
   <ContextMenu :menu-items="contextMenuItems">
     <div class="product-card">
       <div class="product-image-container">
-        <img 
-          :src="product.image" 
-          :alt="product.name" 
-          class="product-image"
-        />
+        <img :src="product.image" :alt="product.name" class="product-image" />
         <div class="quick-actions">
-          <button 
+          <button
             class="quick-action-btn"
             @click.stop="emit('addToCart', product)"
             title="Add to Cart"
           >
             🛒
           </button>
-          <button 
+          <button
             class="quick-action-btn"
             @click.stop="emit('viewDetails', product)"
             title="View Details"
@@ -78,24 +74,19 @@ const contextMenuItems = [
           </button>
         </div>
       </div>
-      
+
       <div class="product-info">
         <h3 class="product-name">{{ product.name }}</h3>
         <p class="product-description">{{ product.description }}</p>
         <div class="product-footer">
           <span class="product-price">${{ product.price.toFixed(2) }}</span>
-          <button 
-            class="add-to-cart-btn"
-            @click.stop="emit('addToCart', product)"
-          >
+          <button class="add-to-cart-btn" @click.stop="emit('addToCart', product)">
             Add to Cart
           </button>
         </div>
       </div>
-      
-      <div class="context-hint">
-        💡 Right-click for more options
-      </div>
+
+      <div class="context-hint">💡 Right-click for more options</div>
     </div>
   </ContextMenu>
 </template>
@@ -239,4 +230,3 @@ const contextMenuItems = [
   opacity: 1;
 }
 </style>
-
