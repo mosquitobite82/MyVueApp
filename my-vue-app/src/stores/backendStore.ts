@@ -1,12 +1,12 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import { mockSignalRHub } from '@/api/mock/signalr';
-import type { StateChangeMessage, ClientEvent } from '@/api/mock/signalr';
-import type { Entity } from './types';
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { mockSignalRHub } from '@/api/mock/signalr'
+import type { StateChangeMessage, ClientEvent } from '@/api/mock/signalr'
+import type { Entity } from './types'
 
 /**
  * Backend State Store
- * 
+ *
  * Manages all state synchronized with the backend through SignalR.
  * - Connects to SignalR hub
  * - Subscribes to state changes from backend
@@ -15,91 +15,91 @@ import type { Entity } from './types';
  */
 export const useBackendStore = defineStore('backend', () => {
   // State
-  const entities = ref<Record<string, Entity>>({});
-  const isConnected = ref(false);
-  const isLoading = ref(false);
-  const error = ref<string | null>(null);
-  const lastUpdate = ref<number | null>(null);
+  const entities = ref<Record<string, Entity>>({})
+  const isConnected = ref(false)
+  const isLoading = ref(false)
+  const error = ref<string | null>(null)
+  const lastUpdate = ref<number | null>(null)
 
   // Unsubscribe functions
-  let unsubscribeStateChange: (() => void) | null = null;
-  let unsubscribeConnectionState: (() => void) | null = null;
+  let unsubscribeStateChange: (() => void) | null = null
+  let unsubscribeConnectionState: (() => void) | null = null
 
   // Getters
-  const entityIds = computed(() => Object.keys(entities.value));
-  const entityCount = computed(() => entityIds.value.length);
-  const allEntities = computed(() => Object.values(entities.value));
+  const entityIds = computed(() => Object.keys(entities.value))
+  const entityCount = computed(() => entityIds.value.length)
+  const allEntities = computed(() => Object.values(entities.value))
 
   /**
    * Get entity by ID
    */
   const getEntityById = (id: string): Entity | undefined => {
-    return entities.value[id];
-  };
+    return entities.value[id]
+  }
 
   /**
    * Handle state change message from backend
    */
   const handleStateChange = (message: StateChangeMessage): void => {
-    const { entityId, property, value, timestamp } = message;
+    const { entityId, property, value, timestamp } = message
 
     // Create or update entity
     if (!entities.value[entityId]) {
       entities.value[entityId] = {
         id: entityId,
         [property]: value,
-      };
+      }
     } else {
       entities.value[entityId] = {
         ...entities.value[entityId],
         [property]: value,
-      };
+      }
     }
 
     // Update last update timestamp
-    lastUpdate.value = timestamp;
-  };
+    lastUpdate.value = timestamp
+  }
 
   /**
    * Handle connection state changes
    */
   const handleConnectionStateChange = (state: string): void => {
-    isConnected.value = state === 'connected';
-  };
+    isConnected.value = state === 'connected'
+  }
 
   /**
    * Connect to the backend SignalR hub
    */
   const connect = async (): Promise<void> => {
     if (isConnected.value) {
-      return;
+      return
     }
 
-    isLoading.value = true;
-    error.value = null;
+    isLoading.value = true
+    error.value = null
 
     try {
       // Start SignalR connection
-      await mockSignalRHub.start();
+      await mockSignalRHub.start()
 
       // Subscribe to state changes
-      unsubscribeStateChange = mockSignalRHub.onStateChange(handleStateChange);
+      unsubscribeStateChange = mockSignalRHub.onStateChange(handleStateChange)
 
       // Subscribe to connection state changes
       unsubscribeConnectionState = mockSignalRHub.onConnectionStateChanged(
-        handleConnectionStateChange
-      );
+        handleConnectionStateChange,
+      )
 
       // Update connection status
-      isConnected.value = mockSignalRHub.getConnectionState() === 'connected';
+      isConnected.value = mockSignalRHub.getConnectionState() === 'connected'
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      error.value = errorMessage;
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      error.value = errorMessage
+      throw err
     } finally {
-      isLoading.value = false;
+      isLoading.value = false
     }
-  };
+  }
 
   /**
    * Disconnect from the backend SignalR hub
@@ -107,28 +107,28 @@ export const useBackendStore = defineStore('backend', () => {
   const disconnect = (): void => {
     // Unsubscribe from events
     if (unsubscribeStateChange) {
-      unsubscribeStateChange();
-      unsubscribeStateChange = null;
+      unsubscribeStateChange()
+      unsubscribeStateChange = null
     }
 
     if (unsubscribeConnectionState) {
-      unsubscribeConnectionState();
-      unsubscribeConnectionState = null;
+      unsubscribeConnectionState()
+      unsubscribeConnectionState = null
     }
 
     // Stop the hub
-    mockSignalRHub.stop();
+    mockSignalRHub.stop()
 
     // Update state
-    isConnected.value = false;
-  };
+    isConnected.value = false
+  }
 
   /**
    * Send a focus change event to the backend
    */
   const sendFocusChange = async (elementId: string, hasFocus: boolean): Promise<void> => {
     if (!isConnected.value) {
-      throw new Error('Not connected to backend');
+      throw new Error('Not connected to backend')
     }
 
     const event: ClientEvent = {
@@ -136,10 +136,10 @@ export const useBackendStore = defineStore('backend', () => {
       elementId,
       hasFocus,
       timestamp: Date.now(),
-    };
+    }
 
-    await mockSignalRHub.sendEvent(event);
-  };
+    await mockSignalRHub.sendEvent(event)
+  }
 
   /**
    * Send a value change event to the backend
@@ -147,10 +147,10 @@ export const useBackendStore = defineStore('backend', () => {
   const sendValueChange = async (
     elementId: string,
     oldValue: string | number,
-    newValue: string | number
+    newValue: string | number,
   ): Promise<void> => {
     if (!isConnected.value) {
-      throw new Error('Not connected to backend');
+      throw new Error('Not connected to backend')
     }
 
     const event: ClientEvent = {
@@ -159,24 +159,24 @@ export const useBackendStore = defineStore('backend', () => {
       oldValue,
       newValue,
       timestamp: Date.now(),
-    };
+    }
 
-    await mockSignalRHub.sendEvent(event);
-  };
+    await mockSignalRHub.sendEvent(event)
+  }
 
   /**
    * Clear all entities from the store
    */
   const clearEntities = (): void => {
-    entities.value = {};
-  };
+    entities.value = {}
+  }
 
   /**
    * Clear the error state
    */
   const clearError = (): void => {
-    error.value = null;
-  };
+    error.value = null
+  }
 
   return {
     // State
@@ -199,6 +199,5 @@ export const useBackendStore = defineStore('backend', () => {
     sendValueChange,
     clearEntities,
     clearError,
-  };
-});
-
+  }
+})

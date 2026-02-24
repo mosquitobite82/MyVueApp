@@ -1,37 +1,41 @@
 // Event types that can be sent to the backend
-export type EventType = 'focusChanged' | 'valueChanged';
+export type EventType = 'focusChanged' | 'valueChanged'
 
 // Event payload interfaces
 export interface FocusChangedEvent {
-  type: 'focusChanged';
-  elementId: string;
-  hasFocus: boolean;
-  timestamp: number;
+  type: 'focusChanged'
+  elementId: string
+  hasFocus: boolean
+  timestamp: number
 }
 
 export interface ValueChangedEvent {
-  type: 'valueChanged';
-  elementId: string;
-  oldValue: string | number;
-  newValue: string | number;
-  timestamp: number;
+  type: 'valueChanged'
+  elementId: string
+  oldValue: string | number
+  newValue: string | number
+  timestamp: number
 }
 
-export type ClientEvent = FocusChangedEvent | ValueChangedEvent;
+export type ClientEvent = FocusChangedEvent | ValueChangedEvent
 
 // State change message from backend
 export interface StateChangeMessage<T = unknown> {
-  entityId: string;
-  property: string;
-  value: T;
-  timestamp: number;
-  source?: string;
+  entityId: string
+  property: string
+  value: T
+  timestamp: number
+  source?: string
 }
 
 // Connection state
-export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
+export type ConnectionState =
+  | 'disconnected'
+  | 'connecting'
+  | 'connected'
+  | 'reconnecting'
+  | 'disconnected'
 
 // Callback types
-export type StateChangeCallback<T = unknown> = (message: StateChangeMessage<T>) => void;
-export type ConnectionStateCallback = (state: ConnectionState) => void;
-
+export type StateChangeCallback<T = unknown> = (message: StateChangeMessage<T>) => void
+export type ConnectionStateCallback = (state: ConnectionState) => void

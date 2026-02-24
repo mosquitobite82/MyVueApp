@@ -1,20 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import VuetifyContextMenuDemo from './components/VuetifyContextMenuDemo.vue'
-import ClickableWithMenuDemo from './components/ClickableWithMenuDemo.vue'
 import BackendStateDemo from './components/BackendStateDemo.vue'
-
-const showVuetifyDemo = ref(true);
-const showMockSignalRDemo = ref(true);
-
+import MockSignalRControl from './components/MockSignalRControl.vue'
 </script>
 
 <template>
   <v-app>
     <v-main>
-      <BackendStateDemo />
-      <!-- <VuetifyContextMenuDemo /> -->
-      <!-- <ClickableWithMenuDemo /> -->
+      <MockSignalRControl />
+      <!-- <BackendStateDemo /> -->
     </v-main>
   </v-app>
 </template>
