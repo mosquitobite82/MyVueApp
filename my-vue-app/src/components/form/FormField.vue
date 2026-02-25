@@ -24,11 +24,11 @@ const handleChange = (newValue: unknown) => {
 </script>
 
 <template>
-  <TextField      v-if="field.type === 'text'"      :field="field" @change="handleChange" />
-  <TextareaField  v-else-if="field.type === 'textarea'"  :field="field" @change="handleChange" />
-  <NumberField    v-else-if="field.type === 'number'"    :field="field" />
-  <CheckboxField  v-else-if="field.type === 'checkbox'"  :field="field" @change="handleChange" />
-  <SelectField    v-else-if="field.type === 'select'"    :field="field" @change="handleChange" />
-  <RadioField     v-else-if="field.type === 'radio'"     :field="field" @change="handleChange" />
-  <DateTimeField  v-else-if="field.type === 'datetime'"  :field="field" @change="handleChange" />
+  <TextField v-if="field.type === 'text'" :field="field" @change="handleChange" />
+  <TextareaField v-else-if="field.type === 'textarea'" :field="field" @change="handleChange" />
+  <NumberField v-else-if="field.type === 'number'" :field="field" />
+  <CheckboxField v-else-if="field.type === 'checkbox'" :field="field" @change="handleChange" />
+  <SelectField v-else-if="field.type === 'select'" :field="field" @change="handleChange" />
+  <RadioField v-else-if="field.type === 'radio'" :field="field" @change="handleChange" />
+  <DateTimeField v-else-if="field.type === 'datetime'" :field="field" @change="handleChange" />
 </template>

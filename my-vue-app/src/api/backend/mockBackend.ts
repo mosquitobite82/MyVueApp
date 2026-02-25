@@ -183,6 +183,8 @@ export function applyFormFieldChange(
 
     if ((field.type === 'text' || field.type === 'textarea') && typeof newValue === 'string') {
       field.value = newValue
+    } else if (field.type === 'number' && typeof newValue === 'number') {
+      field.value = newValue
     } else if (field.type === 'checkbox' && typeof newValue === 'boolean') {
       field.value = newValue
     } else if (field.type === 'datetime' && typeof newValue === 'string') {
