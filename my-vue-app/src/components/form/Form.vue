@@ -3,7 +3,6 @@ import { onMounted, onUnmounted } from 'vue'
 import { useFormStore } from '@/stores/formStore'
 import FormSection from '@/components/form/FormSection.vue'
 import FormWindow from '@/components/form/FormWindow.vue'
-import FormField from '@/components/form/FormField.vue'
 
 const store = useFormStore()
 
@@ -24,19 +23,11 @@ onUnmounted(() => store.disconnect())
 
   <div v-else class="form-root">
     <FormWindow v-for="win in store.form.windows" :key="win.name" :name="win.name">
-      <FormSection
+        <FormSection
           v-for="section in win.sections"
           :key="section.formId"
-          :name="section.name"
-        >
-          <FormField
-            v-for="(field, i) in section.fields"
-            :key="i"
-            :field="field"
-            :section-id="section.formId"
-            :field-index="i"
-          />
-        </FormSection>
+          :section="section"
+        />
     </FormWindow>
   </div>
 </template>

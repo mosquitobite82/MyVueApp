@@ -1,4 +1,4 @@
-import type { Form } from '@/types/form'
+import type { Form, Section } from '@/types/form'
 
 /** Initial seed — treated as immutable. The live backend state lives in `currentFormState`. */
 const initialFormState: Form = {
@@ -13,7 +13,31 @@ const initialFormState: Form = {
         {
           name: 'Basic Details',
           formId: 'personal-basic',
-          sections: [],
+          sections: [
+            {
+              name: 'Address',
+              formId: 'personal-basic-address',
+              sections: [],
+              buttons: [],
+              fields: [
+                {
+                  type: 'text',
+                  label: { name: 'Street', position: 'side' },
+                  value: '12 Baker Street',
+                },
+                {
+                  type: 'text',
+                  label: { name: 'City', position: 'side' },
+                  value: 'London',
+                },
+                {
+                  type: 'text',
+                  label: { name: 'Postcode', position: 'side' },
+                  value: 'NW1 6XE',
+                },
+              ],
+            },
+          ],
           buttons: [],
           fields: [
             {
@@ -75,7 +99,31 @@ const initialFormState: Form = {
         {
           name: 'Appointment',
           formId: 'schedule-appointment',
-          sections: [],
+          sections: [
+            {
+              name: 'Recurrence',
+              formId: 'schedule-recurrence',
+              sections: [],
+              buttons: [],
+              fields: [
+                {
+                  type: 'checkbox',
+                  label: { name: 'Repeat', position: 'side' },
+                  value: false,
+                },
+                {
+                  type: 'select',
+                  label: { name: 'Frequency', position: 'side' },
+                  items: [
+                    { label: 'Daily', value: 'daily' },
+                    { label: 'Weekly', value: 'weekly' },
+                    { label: 'Monthly', value: 'monthly' },
+                  ],
+                  value: { label: 'Weekly', value: 'weekly' },
+                },
+              ],
+            },
+          ],
           buttons: [],
           fields: [
             {
@@ -110,6 +158,15 @@ export const mockFormState = (): Form => currentFormState
  * Simulates the backend applying a field change.
  * Mutates the internal state and returns the new snapshot.
  */
+function findSection(sections: Section[], sectionId: string): Section | undefined {
+  for (const section of sections) {
+    if (section.formId === sectionId) return section
+    const nested = findSection(section.sections, sectionId)
+    if (nested) return nested
+  }
+  return undefined
+}
+
 export function applyFormFieldChange(
   sectionId: string,
   fieldIndex: number,
@@ -118,7 +175,7 @@ export function applyFormFieldChange(
   const updated: Form = JSON.parse(JSON.stringify(currentFormState))
 
   for (const win of updated.windows) {
-    const section = win.sections.find((s) => s.formId === sectionId)
+    const section = findSection(win.sections, sectionId)
     if (!section) continue
 
     const field = section.fields[fieldIndex]
