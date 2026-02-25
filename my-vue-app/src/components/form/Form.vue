@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { provide, onMounted, onUnmounted } from 'vue'
 import { useFormStore } from '@/stores/formStore'
 import FormSection from '@/components/form/FormSection.vue'
 import FormWindow from '@/components/form/FormWindow.vue'
+import { COMMIT_FIELD_KEY } from '@/composables/useFormCommit'
 
 const store = useFormStore()
 
 onMounted(() => store.connect())
 onUnmounted(() => store.disconnect())
+
+provide(COMMIT_FIELD_KEY, (sectionId, fieldIndex, oldValue, newValue) =>
+  store.sendFieldChange(sectionId, fieldIndex, oldValue, newValue),
+)
 </script>
 
 <template>
