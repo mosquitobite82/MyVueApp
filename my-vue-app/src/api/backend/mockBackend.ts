@@ -23,17 +23,17 @@ const initialFormState: Form = {
                 {
                   type: 'text',
                   label: { name: 'Street', position: 'side' },
-                  value: '12 Baker Street',
+                  value: 'Ågatan 24 C',
                 },
                 {
                   type: 'text',
                   label: { name: 'City', position: 'side' },
-                  value: 'London',
+                  value: 'Söderköping',
                 },
                 {
                   type: 'text',
                   label: { name: 'Postcode', position: 'side' },
-                  value: 'NW1 6XE',
+                  value: '61434',
                 },
               ],
             },
@@ -43,22 +43,22 @@ const initialFormState: Form = {
             {
               type: 'text',
               label: { name: 'First Name', position: 'side' },
-              value: 'Jane',
+              value: 'Johannes',
             },
             {
               type: 'text',
               label: { name: 'Last Name', position: 'side' },
-              value: 'Smith',
+              value: 'Lindgren',
             },
             {
               type: 'number',
               label: { name: 'Age', position: 'side' },
-              value: 34,
+              value: 43,
             },
             {
               type: 'checkbox',
               label: { name: 'Subscribe to newsletter', position: 'side' },
-              value: true,
+              value: false,
             },
           ],
         },
@@ -71,18 +71,18 @@ const initialFormState: Form = {
             {
               type: 'text',
               label: { name: 'Email', position: 'side' },
-              value: 'jane.smith@example.com',
+              value: 'johannes.lindgren@im.se',
             },
             {
               type: 'select',
               label: { name: 'Country', position: 'side' },
               items: [
-                { label: 'United States', value: 'us' },
+                { label: 'Sweden', value: 'se' },
                 { label: 'United Kingdom', value: 'uk' },
-                { label: 'Canada', value: 'ca' },
-                { label: 'Australia', value: 'au' },
+                { label: 'Denmark', value: 'dk' },
+                { label: 'Norway', value: 'no' },
               ],
-              value: { label: 'United Kingdom', value: 'uk' },
+              value: { label: 'Sweden', value: 'se' },
             },
             {
               type: 'textarea',
