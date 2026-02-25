@@ -6,8 +6,8 @@ import MockSignalRControl from './components/MockSignalRControl.vue'
 <template>
   <v-app>
     <v-main>
-      <MockSignalRControl />
-      <!-- <BackendStateDemo /> -->
+      <!-- <MockSignalRControl /> -->
+      <BackendStateDemo />
     </v-main>
   </v-app>
 </template>

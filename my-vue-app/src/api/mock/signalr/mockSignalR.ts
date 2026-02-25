@@ -5,6 +5,8 @@ import type {
   StateChangeCallback,
   ConnectionStateCallback,
 } from './types'
+import type { Form } from '@/types/form'
+import { applyFormFieldChange } from '@/api/backend/mockBackend'
 
 export interface MockSignalRConfig {
   connectionDelay?: number
@@ -138,6 +140,20 @@ export class MockSignalRHub {
   }
 
   /**
+   * Push a complete Form state to all subscribers.
+   * Simulates the backend sending the current form state over SignalR.
+   */
+  pushFormState(form: Form): void {
+    this.simulateStateChange<Form>({
+      entityId: 'form',
+      property: 'state',
+      value: form,
+      timestamp: Date.now(),
+      source: 'backend',
+    })
+  }
+
+  /**
    * Update configuration values at runtime.
    * Only the provided keys are changed; others are left intact.
    */
@@ -171,7 +187,19 @@ export class MockSignalRHub {
   }
 
   private scheduleAutoStateChange(event: ClientEvent): void {
-    const { minStateChangesPerAction, maxStateChangesPerAction, stateChangeDelay } = this.config
+    const { stateChangeDelay } = this.config
+
+    // Form field changes are handled as a full state push, not generic property updates
+    if (event.type === 'formFieldChanged') {
+      setTimeout(() => {
+        if (this.connectionState !== 'connected') return
+        const updatedForm = applyFormFieldChange(event.sectionId, event.fieldIndex, event.newValue)
+        this.pushFormState(updatedForm)
+      }, stateChangeDelay)
+      return
+    }
+
+    const { minStateChangesPerAction, maxStateChangesPerAction } = this.config
     const count =
       Math.floor(Math.random() * (maxStateChangesPerAction - minStateChangesPerAction + 1)) +
       minStateChangesPerAction

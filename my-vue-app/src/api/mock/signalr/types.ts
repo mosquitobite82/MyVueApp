@@ -1,5 +1,5 @@
 // Event types that can be sent to the backend
-export type EventType = 'focusChanged' | 'valueChanged'
+export type EventType = 'focusChanged' | 'valueChanged' | 'formFieldChanged'
 
 // Event payload interfaces
 export interface FocusChangedEvent {
@@ -17,7 +17,18 @@ export interface ValueChangedEvent {
   timestamp: number
 }
 
-export type ClientEvent = FocusChangedEvent | ValueChangedEvent
+export interface FormFieldChangedEvent {
+  type: 'formFieldChanged'
+  /** formId of the Section containing the field */
+  sectionId: string
+  /** Index of the field within Section.fields */
+  fieldIndex: number
+  oldValue: string
+  newValue: string
+  timestamp: number
+}
+
+export type ClientEvent = FocusChangedEvent | ValueChangedEvent | FormFieldChangedEvent
 
 // State change message from backend
 export interface StateChangeMessage<T = unknown> {
