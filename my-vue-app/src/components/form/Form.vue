@@ -1,70 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { useFormStore } from '@/stores/formStore'
-import DateTimePicker from '@/components/form/DateTime/DateTime.vue'
-import type { DateTime as DateTimeValue } from '@/components/form/DateTime/DateTime.vue'
+import FormSection from '@/components/form/FormSection.vue'
+import FormWindow from '@/components/form/FormWindow.vue'
+import FormField from '@/components/form/FormField.vue'
 
 const store = useFormStore()
 
 onMounted(() => store.connect())
 onUnmounted(() => store.disconnect())
-
-// --- Draft tracking for editable fields ---
-// Key format: `${section.formId}:${fieldIndex}`
-const drafts = ref<Record<string, string>>({})
-
-const fieldKey = (sectionId: string, index: number) => `${sectionId}:${index}`
-
-/** Display value: show the draft while the user is typing, otherwise show the store value. */
-const displayValue = (sectionId: string, index: number, storeValue: string) => {
-  const key = fieldKey(sectionId, index)
-  return key in drafts.value ? drafts.value[key]! : storeValue
-}
-
-const setDraft = (sectionId: string, index: number, value: string) => {
-  drafts.value[fieldKey(sectionId, index)] = value
-}
-
-// --- DateTime helpers ---
-const pad = (n: number) => String(n).padStart(2, '0')
-
-const parseDateTime = (s: string | undefined): DateTimeValue | null => {
-  if (!s) return null
-  const m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?$/.exec(s.trim())
-  if (!m) return null
-  const month = Number(m[2])
-  if (month < 1 || month > 12) return null
-  return {
-    year: Number(m[1]),
-    month: month as DateTimeValue['month'],
-    day: Number(m[3]),
-    hour: Number(m[4] ?? 0),
-    minute: Number(m[5] ?? 0),
-    second: 0,
-  }
-}
-
-const formatDateTime = (dt: DateTimeValue | null): string => {
-  if (!dt) return ''
-  return `${dt.year}-${pad(dt.month)}-${pad(dt.day)} ${pad(dt.hour)}:${pad(dt.minute)}`
-}
-
-/** Called on blur: send event if value changed, then clear the draft. */
-const commitField = async (sectionId: string, index: number, storeValue: string) => {
-  const key = fieldKey(sectionId, index)
-  const draft = drafts.value[key]
-
-  // Always clear the draft so the field reverts to store value if nothing changed
-  delete drafts.value[key]
-
-  if (draft === undefined || draft === storeValue) return
-
-  try {
-    await store.sendFieldChange(sectionId, index, storeValue, draft)
-  } catch (err) {
-    console.error('Failed to commit field change:', err)
-  }
-}
 </script>
 
 <template>
@@ -79,116 +23,21 @@ const commitField = async (sectionId: string, index: number, storeValue: string)
   </div>
 
   <div v-else class="form-root">
-    <v-card v-for="win in store.form.windows" :key="win.name" class="mb-4" variant="outlined">
-      <v-card-title class="text-subtitle-1 font-weight-bold">{{ win.name }}</v-card-title>
-
-      <v-card-text>
-        <div v-for="section in win.sections" :key="section.formId" class="form-section mb-4">
-          <div class="text-caption text-medium-emphasis text-uppercase mb-2">
-            {{ section.name }}
-          </div>
-
-          <v-divider class="mb-3" />
-
-          <div class="form-fields">
-            <template v-for="(field, i) in section.fields" :key="i">
-              <v-text-field
-                v-if="field.type === 'text'"
-                :label="field.label.name"
-                :model-value="displayValue(section.formId, i, field.value ?? '')"
-                density="compact"
-                variant="outlined"
-                hide-details="auto"
-                @update:model-value="(val) => setDraft(section.formId, i, String(val))"
-                @blur="() => commitField(section.formId, i, field.value ?? '')"
-              />
-
-              <v-textarea
-                v-else-if="field.type === 'textarea'"
-                :label="field.label.name"
-                :model-value="displayValue(section.formId, i, field.value ?? '')"
-                density="compact"
-                variant="outlined"
-                rows="2"
-                auto-grow
-                hide-details="auto"
-                @update:model-value="(val) => setDraft(section.formId, i, String(val))"
-                @blur="() => commitField(section.formId, i, field.value ?? '')"
-              />
-
-              <v-text-field
-                v-else-if="field.type === 'number'"
-                :label="field.label.name"
-                :model-value="field.value ?? ''"
-                type="number"
-                density="compact"
-                variant="outlined"
-                readonly
-                hide-details="auto"
-              />
-
-              <v-checkbox
-                v-else-if="field.type === 'checkbox'"
-                :label="field.label.name"
-                :model-value="field.value ?? false"
-                density="compact"
-                hide-details="auto"
-                @update:model-value="(val) => store.sendFieldChange(section.formId, i, field.value ?? false, Boolean(val)).catch(console.error)"
-              />
-
-              <v-select
-                v-else-if="field.type === 'select'"
-                :label="field.label.name"
-                :items="field.items"
-                :model-value="field.value?.value"
-                item-title="label"
-                item-value="value"
-                density="compact"
-                variant="outlined"
-                hide-details="auto"
-                @update:model-value="(rawVal) => {
-                  const item = field.items.find((it) => it.value === rawVal)
-                  if (item) store.sendFieldChange(section.formId, i, field.value, item).catch(console.error)
-                }"
-              />
-
-              <div v-else-if="field.type === 'radio'">
-                <div class="text-body-2 mb-1">{{ field.label.name }}</div>
-                <v-radio-group
-                  :model-value="field.value?.value"
-                  inline
-                  density="compact"
-                  hide-details="auto"
-                  @update:model-value="(rawVal) => {
-                    const item = field.items.find((it) => it.value === rawVal)
-                    if (item) store.sendFieldChange(section.formId, i, field.value, item).catch(console.error)
-                  }"
-                >
-                  <v-radio
-                    v-for="item in field.items"
-                    :key="String(item.value)"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </v-radio-group>
-              </div>
-
-              <div v-else-if="field.type === 'datetime'">
-                <div class="text-body-2 mb-1">{{ field.label.name }}</div>
-                <DateTimePicker
-                  :model-value="parseDateTime(field.value)"
-                  :placeholder="field.label.name"
-                  @update:model-value="(dt) => {
-                    const str = formatDateTime(dt)
-                    store.sendFieldChange(section.formId, i, field.value ?? '', str).catch(console.error)
-                  }"
-                />
-              </div>
-            </template>
-          </div>
-        </div>
-      </v-card-text>
-    </v-card>
+    <FormWindow v-for="win in store.form.windows" :key="win.name" :name="win.name">
+      <FormSection
+          v-for="section in win.sections"
+          :key="section.formId"
+          :name="section.name"
+        >
+          <FormField
+            v-for="(field, i) in section.fields"
+            :key="i"
+            :field="field"
+            :section-id="section.formId"
+            :field-index="i"
+          />
+        </FormSection>
+    </FormWindow>
   </div>
 </template>
 
@@ -196,11 +45,5 @@ const commitField = async (sectionId: string, index: number, storeValue: string)
 .form-root {
   display: flex;
   flex-direction: column;
-}
-
-.form-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
 }
 </style>
