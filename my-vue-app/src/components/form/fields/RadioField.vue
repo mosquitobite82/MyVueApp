@@ -25,7 +25,6 @@ watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.
       inline
       density="compact"
       hide-details="auto"
-      @focus="emit('focus')"
       @update:model-value="onChange"
     >
       <v-radio
@@ -33,6 +32,7 @@ watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.
         :key="String(item.value)"
         :label="item.label"
         :value="item.value"
+        @focus="emit('focus')"
       />
     </v-radio-group>
   </div>

@@ -9,6 +9,7 @@
         :placeholder="placeholder"
         hide-details
         density="comfortable"
+        @focus="emit('focus')"
         @blur="parseInput"
         @keydown.down.prevent="onActivatorArrowDown"
       /> 
@@ -49,6 +50,7 @@ const props = defineProps<{
   placeholder?: string;
   initialValue?: DateTime | Date | null;
 }>();
+const emit = defineEmits<{ focus: [] }>();
 
 const menuOpen = ref(false);
 const activatorRef = ref<{ focus?: () => void } | null>(null);
