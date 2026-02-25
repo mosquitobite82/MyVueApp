@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { provide, onMounted, onUnmounted } from 'vue'
+import { provide, computed, onMounted, onUnmounted } from 'vue'
 import { useFormStore } from '@/stores/formStore'
 import FormSection from '@/components/form/FormSection.vue'
 import FormWindow from '@/components/form/FormWindow.vue'
-import { COMMIT_FIELD_KEY } from '@/composables/useFormCommit'
+import { COMMIT_FIELD_KEY, ACTIVE_FIELD_KEY, REQUEST_FOCUS_KEY } from '@/composables/useFormCommit'
 
 const store = useFormStore()
 
@@ -12,6 +12,12 @@ onUnmounted(() => store.disconnect())
 
 provide(COMMIT_FIELD_KEY, (sectionId, fieldIndex, oldValue, newValue) =>
   store.sendFieldChange(sectionId, fieldIndex, oldValue, newValue),
+)
+
+provide(ACTIVE_FIELD_KEY, computed(() => store.form?.activeFieldId ?? null))
+
+provide(REQUEST_FOCUS_KEY, (sectionId, fieldIndex, currentValue) =>
+  store.requestFocusChange(sectionId, fieldIndex, currentValue),
 )
 </script>
 

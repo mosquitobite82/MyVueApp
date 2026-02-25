@@ -6,6 +6,7 @@ const initialFormState: Form = {
   isLoading: false,
   error: null,
   lastUpdate: null,
+  activeFieldId: 'personal-basic:0',
   windows: [
     {
       name: 'Personal Information',
@@ -199,6 +200,64 @@ export function applyFormFieldChange(
       field.value = newValue as { label: string; value: string | number | boolean }
     }
     break
+  }
+
+  updated.lastUpdate = Date.now()
+  currentFormState = updated
+  return currentFormState
+}
+
+/** Returns every field across all windows and sections in document order. */
+function getAllFieldIds(form: Form): Array<{ sectionId: string; fieldIndex: number }> {
+  const result: Array<{ sectionId: string; fieldIndex: number }> = []
+
+  const traverseSections = (sections: Section[]) => {
+    for (const section of sections) {
+      section.fields.forEach((_, i) => result.push({ sectionId: section.formId, fieldIndex: i }))
+      traverseSections(section.sections)
+    }
+  }
+
+  for (const win of form.windows) traverseSections(win.sections)
+  return result
+}
+
+/**
+ * Simulates backend receiving a "user left field X with value Y" event.
+ * Validates the value, updates the field if valid, and advances `activeFieldId`
+ * to the next field in tab order.
+ */
+export function applyFocusChange(
+  sectionId: string,
+  fieldIndex: number,
+  currentValue: unknown,
+): Form {
+  const updated: Form = JSON.parse(JSON.stringify(currentFormState))
+
+  // Find the field and update its value if the type matches
+  outer: for (const win of updated.windows) {
+    const section = findSection(win.sections, sectionId)
+    if (!section) continue
+
+    const field = section.fields[fieldIndex]
+    if (!field) continue
+
+    if ((field.type === 'text' || field.type === 'textarea') && typeof currentValue === 'string') {
+      field.value = currentValue
+    } else if (field.type === 'number' && typeof currentValue === 'number' && !Number.isNaN(currentValue)) {
+      field.value = currentValue
+    }
+    break outer
+  }
+
+  // Advance activeFieldId to the next field in document order (wraps around)
+  const allFields = getAllFieldIds(updated)
+  const currentKey = `${sectionId}:${fieldIndex}`
+  const idx = allFields.findIndex((f) => `${f.sectionId}:${f.fieldIndex}` === currentKey)
+
+  if (idx !== -1) {
+    const next = allFields[(idx + 1) % allFields.length]!
+    updated.activeFieldId = `${next.sectionId}:${next.fieldIndex}`
   }
 
   updated.lastUpdate = Date.now()

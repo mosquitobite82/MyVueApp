@@ -4,7 +4,7 @@ import { mockSignalRHub } from '@/api/mock/signalr'
 import type { StateChangeMessage } from '@/api/mock/signalr'
 import type { Form } from '@/types/form'
 import { mockFormState } from '@/api/backend/mockBackend'
-import type { FormFieldChangedEvent } from '@/api/mock/signalr'
+import type { FormFieldChangedEvent, FormFocusChangedEvent } from '@/api/mock/signalr'
 
 export const useFormStore = defineStore('form', () => {
   const form = ref<Form | null>(null)
@@ -84,6 +84,29 @@ export const useFormStore = defineStore('form', () => {
     await mockSignalRHub.sendEvent(event)
   }
 
+  /**
+   * Sends a "user blurred field X with value Y" event to the mock backend.
+   * The backend validates the value, updates the field if valid, advances
+   * `activeFieldId` to the next field, and pushes back the updated form state.
+   */
+  const requestFocusChange = async (
+    sectionId: string,
+    fieldIndex: number,
+    currentValue: unknown,
+  ): Promise<void> => {
+    if (!isConnected.value) throw new Error('Not connected')
+
+    const event: FormFocusChangedEvent = {
+      type: 'formFocusChanged',
+      sectionId,
+      fieldIndex,
+      currentValue,
+      timestamp: Date.now(),
+    }
+
+    await mockSignalRHub.sendEvent(event)
+  }
+
   const clearError = (): void => {
     error.value = null
   }
@@ -96,6 +119,7 @@ export const useFormStore = defineStore('form', () => {
     connect,
     disconnect,
     sendFieldChange,
+    requestFocusChange,
     clearError,
   }
 })

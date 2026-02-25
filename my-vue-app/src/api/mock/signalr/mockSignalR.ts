@@ -6,7 +6,7 @@ import type {
   ConnectionStateCallback,
 } from './types'
 import type { Form } from '@/types/form'
-import { applyFormFieldChange } from '@/api/backend/mockBackend'
+import { applyFormFieldChange, applyFocusChange } from '@/api/backend/mockBackend'
 
 export interface MockSignalRConfig {
   connectionDelay?: number
@@ -194,6 +194,16 @@ export class MockSignalRHub {
       setTimeout(() => {
         if (this.connectionState !== 'connected') return
         const updatedForm = applyFormFieldChange(event.sectionId, event.fieldIndex, event.newValue)
+        this.pushFormState(updatedForm)
+      }, stateChangeDelay)
+      return
+    }
+
+    // Focus change: validate current value, update field, advance activeFieldId
+    if (event.type === 'formFocusChanged') {
+      setTimeout(() => {
+        if (this.connectionState !== 'connected') return
+        const updatedForm = applyFocusChange(event.sectionId, event.fieldIndex, event.currentValue)
         this.pushFormState(updatedForm)
       }, stateChangeDelay)
       return

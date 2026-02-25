@@ -36,4 +36,6 @@ export interface Form {
   isLoading: boolean
   error: string | null
   lastUpdate: number | null
+  /** The `sectionId:fieldIndex` key of the field that the backend wants focused. */
+  activeFieldId: string | null
 }

@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { ref, watch, onMounted, nextTick } from 'vue'
 import type { DateTimeInput } from '@/types/fields'
 import DateTimePicker from '@/components/form/DateTime/DateTime.vue'
 import type { DateTime as DateTimeValue } from '@/components/form/DateTime/DateTime.vue'
 
-const props = defineProps<{ field: DateTimeInput }>()
+const props = defineProps<{ field: DateTimeInput; active: boolean }>()
 const emit = defineEmits<{ change: [newValue: string] }>()
+
+const fieldRef = ref<{ focus?: () => void } | null>(null)
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -32,12 +35,16 @@ const formatDateTime = (dt: DateTimeValue | null): string => {
 const onChange = (dt: DateTimeValue | null) => {
   emit('change', formatDateTime(dt))
 }
+
+onMounted(() => { if (props.active) nextTick(() => fieldRef.value?.focus?.()) })
+watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.value?.focus?.()) })
 </script>
 
 <template>
   <div>
     <div class="text-body-2 mb-1">{{ field.label.name }}</div>
     <DateTimePicker
+      ref="fieldRef"
       :model-value="parseDateTime(field.value)"
       :placeholder="field.label.name"
       @update:model-value="onChange"

@@ -1,27 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import type { TextInput } from '@/types/fields'
 
-const props = defineProps<{ field: TextInput }>()
-const emit = defineEmits<{ change: [newValue: string] }>()
+const props = defineProps<{ field: TextInput; active: boolean }>()
+const emit = defineEmits<{ blur: [currentValue: string] }>()
 
+const fieldRef = ref<{ focus?: () => void } | null>(null)
 const draft = ref<string | undefined>(undefined)
 
 const displayValue = () => draft.value ?? props.field.value ?? ''
-const setDraft = (val: string) => {
-  draft.value = val
-}
+const setDraft = (val: string) => { draft.value = val }
 
 const commit = () => {
   const pending = draft.value
   draft.value = undefined
-  if (pending === undefined || pending === (props.field.value ?? '')) return
-  emit('change', pending)
+  emit('blur', pending ?? props.field.value ?? '')
 }
+
+onMounted(() => { if (props.active) nextTick(() => fieldRef.value?.focus?.()) })
+watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.value?.focus?.()) })
 </script>
 
 <template>
   <v-text-field
+    ref="fieldRef"
     :label="field.label.name"
     :model-value="displayValue()"
     density="compact"
