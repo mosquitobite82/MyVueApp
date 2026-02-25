@@ -5,7 +5,7 @@ import DateTimePicker from '@/components/form/DateTime/DateTime.vue'
 import type { DateTime as DateTimeValue } from '@/components/form/DateTime/DateTime.vue'
 
 const props = defineProps<{ field: DateTimeInput; active: boolean }>()
-const emit = defineEmits<{ change: [newValue: string] }>()
+const emit = defineEmits<{ change: [newValue: string]; focus: [] }>()
 
 const fieldRef = ref<{ focus?: () => void } | null>(null)
 
@@ -47,6 +47,7 @@ watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.
       ref="fieldRef"
       :model-value="parseDateTime(field.value)"
       :placeholder="field.label.name"
+      @focus="emit('focus')"
       @update:model-value="onChange"
     />
   </div>

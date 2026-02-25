@@ -20,3 +20,8 @@ export const ACTIVE_FIELD_KEY: InjectionKey<ComputedRef<string | null>> = Symbol
 
 /** Lets descendant components request a focus change via the backend. */
 export const REQUEST_FOCUS_KEY: InjectionKey<RequestFocusFn> = Symbol('requestFocus')
+
+export type NotifyFocusGainedFn = (sectionId: string, fieldIndex: number) => void
+
+/** Lets descendant components notify the backend that a field just gained focus. */
+export const NOTIFY_FOCUS_KEY: InjectionKey<NotifyFocusGainedFn> = Symbol('notifyFocusGained')

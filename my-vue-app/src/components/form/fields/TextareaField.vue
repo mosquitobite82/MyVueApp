@@ -3,24 +3,32 @@ import { ref, watch, onMounted, nextTick } from 'vue'
 import type { TextareaInput } from '@/types/fields'
 
 const props = defineProps<{ field: TextareaInput; active: boolean }>()
-const emit = defineEmits<{ blur: [currentValue: string] }>()
+const emit = defineEmits<{ blur: [currentValue: string]; focus: [] }>()
 
-const fieldRef = ref<{ focus?: () => void } | null>(null)
+/** The local value the user is typing. */
 const draft = ref<string | undefined>(undefined)
-
-const displayValue = () => draft.value ?? props.field.value ?? ''
-const setDraft = (val: string) => { draft.value = val }
-
-const commit = () => {
-  const pending = draft.value
-  draft.value = undefined
-  emit('blur', pending ?? props.field.value ?? '')
+const setDraft = (val: string) => {
+  draft.value = val
 }
 
-onMounted(() => { if (props.active) nextTick(() => fieldRef.value?.focus?.()) })
-watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.value?.focus?.()) })
-</script>
+/** The value to display in the input. */
+const displayValue = () => draft.value ?? props.field.value ?? ''
 
+const focusableRef = ref<{ focus?: () => void } | null>(null)
+const focus = () => focusableRef.value?.focus?.()
+
+const commit = () => {
+  const pendingValue = displayValue()
+  draft.value = undefined
+  emit('blur', pendingValue)
+}
+
+onMounted(() => props.active && nextTick(focus))
+watch(
+  () => props.active,
+  (isActive) => isActive && nextTick(focus),
+)
+</script>
 <template>
   <v-textarea
     ref="fieldRef"
@@ -32,6 +40,7 @@ watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.
     auto-grow
     hide-details="auto"
     @update:model-value="(val) => setDraft(String(val))"
+    @focus="emit('focus')"
     @blur="commit"
   />
 </template>

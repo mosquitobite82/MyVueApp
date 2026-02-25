@@ -3,7 +3,7 @@ import { ref, watch, onMounted, nextTick } from 'vue'
 import type { NumberInput } from '@/types/fields'
 
 const props = defineProps<{ field: NumberInput; active: boolean }>()
-const emit = defineEmits<{ blur: [currentValue: number] }>()
+const emit = defineEmits<{ blur: [currentValue: number]; focus: [] }>()
 
 const fieldRef = ref<{ focus?: () => void } | null>(null)
 const draft = ref<string | undefined>(undefined)
@@ -32,6 +32,7 @@ watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.
     variant="outlined"
     hide-details="auto"
     @update:model-value="(val) => setDraft(String(val))"
+    @focus="emit('focus')"
     @blur="commit"
   />
 </template>

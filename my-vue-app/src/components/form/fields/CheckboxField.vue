@@ -3,7 +3,7 @@ import { ref, watch, onMounted, nextTick } from 'vue'
 import type { Checkbox } from '@/types/fields'
 
 const props = defineProps<{ field: Checkbox; active: boolean }>()
-const emit = defineEmits<{ change: [newValue: boolean] }>()
+const emit = defineEmits<{ change: [newValue: boolean]; focus: [] }>()
 
 const fieldRef = ref<{ focus?: () => void } | null>(null)
 
@@ -19,5 +19,6 @@ watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.
     density="compact"
     hide-details="auto"
     @update:model-value="(val) => emit('change', Boolean(val))"
+    @focus="emit('focus')"
   />
 </template>

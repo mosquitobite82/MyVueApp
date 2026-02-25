@@ -207,6 +207,18 @@ export function applyFormFieldChange(
   return currentFormState
 }
 
+/**
+ * Simulates the backend receiving a "field X just gained focus" notification.
+ * Simply sets `activeFieldId` to that field — no value update or validation.
+ */
+export function applyFocusGain(sectionId: string, fieldIndex: number): Form {
+  const updated: Form = JSON.parse(JSON.stringify(currentFormState))
+  updated.activeFieldId = `${sectionId}:${fieldIndex}`
+  updated.lastUpdate = Date.now()
+  currentFormState = updated
+  return currentFormState
+}
+
 /** Returns every field across all windows and sections in document order. */
 function getAllFieldIds(form: Form): Array<{ sectionId: string; fieldIndex: number }> {
   const result: Array<{ sectionId: string; fieldIndex: number }> = []

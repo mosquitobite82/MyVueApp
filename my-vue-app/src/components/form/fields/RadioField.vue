@@ -3,7 +3,7 @@ import { ref, watch, onMounted, nextTick } from 'vue'
 import type { RadioInput, FieldValue, SelectItem } from '@/types/fields'
 
 const props = defineProps<{ field: RadioInput<FieldValue>; active: boolean }>()
-const emit = defineEmits<{ change: [newValue: SelectItem<FieldValue>] }>()
+const emit = defineEmits<{ change: [newValue: SelectItem<FieldValue>]; focus: [] }>()
 
 const fieldRef = ref<{ focus?: () => void } | null>(null)
 
@@ -25,6 +25,7 @@ watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.
       inline
       density="compact"
       hide-details="auto"
+      @focus="emit('focus')"
       @update:model-value="onChange"
     >
       <v-radio

@@ -3,7 +3,7 @@ import { ref, watch, onMounted, nextTick } from 'vue'
 import type { SelectInput, FieldValue, SelectItem } from '@/types/fields'
 
 const props = defineProps<{ field: SelectInput<FieldValue>; active: boolean }>()
-const emit = defineEmits<{ change: [newValue: SelectItem<FieldValue>] }>()
+const emit = defineEmits<{ change: [newValue: SelectItem<FieldValue>]; focus: [] }>()
 
 const fieldRef = ref<{ focus?: () => void } | null>(null)
 
@@ -27,6 +27,7 @@ watch(() => props.active, (isActive) => { if (isActive) nextTick(() => fieldRef.
     density="compact"
     variant="outlined"
     hide-details="auto"
+    @focus="emit('focus')"
     @update:model-value="onChange"
   />
 </template>

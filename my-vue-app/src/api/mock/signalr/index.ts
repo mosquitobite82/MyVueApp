@@ -5,6 +5,7 @@ export type {
   ValueChangedEvent,
   FormFieldChangedEvent,
   FormFocusChangedEvent,
+  FormFocusGainedEvent,
   ClientEvent,
   StateChangeMessage,
   ConnectionState,

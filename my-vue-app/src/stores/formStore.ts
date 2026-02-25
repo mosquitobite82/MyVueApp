@@ -4,7 +4,7 @@ import { mockSignalRHub } from '@/api/mock/signalr'
 import type { StateChangeMessage } from '@/api/mock/signalr'
 import type { Form } from '@/types/form'
 import { mockFormState } from '@/api/backend/mockBackend'
-import type { FormFieldChangedEvent, FormFocusChangedEvent } from '@/api/mock/signalr'
+import type { FormFieldChangedEvent, FormFocusChangedEvent, FormFocusGainedEvent } from '@/api/mock/signalr'
 
 export const useFormStore = defineStore('form', () => {
   const form = ref<Form | null>(null)
@@ -107,6 +107,23 @@ export const useFormStore = defineStore('form', () => {
     await mockSignalRHub.sendEvent(event)
   }
 
+  /**
+   * Notifies the backend that a field just gained focus (e.g. via mouse click).
+   * The backend sets `activeFieldId` to that field and pushes the updated state.
+   */
+  const notifyFocusGained = async (sectionId: string, fieldIndex: number): Promise<void> => {
+    if (!isConnected.value) return
+
+    const event: FormFocusGainedEvent = {
+      type: 'formFocusGained',
+      sectionId,
+      fieldIndex,
+      timestamp: Date.now(),
+    }
+
+    await mockSignalRHub.sendEvent(event)
+  }
+
   const clearError = (): void => {
     error.value = null
   }
@@ -120,6 +137,7 @@ export const useFormStore = defineStore('form', () => {
     disconnect,
     sendFieldChange,
     requestFocusChange,
+    notifyFocusGained,
     clearError,
   }
 })

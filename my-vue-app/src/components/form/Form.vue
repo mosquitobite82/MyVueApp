@@ -3,7 +3,7 @@ import { provide, computed, onMounted, onUnmounted } from 'vue'
 import { useFormStore } from '@/stores/formStore'
 import FormSection from '@/components/form/FormSection.vue'
 import FormWindow from '@/components/form/FormWindow.vue'
-import { COMMIT_FIELD_KEY, ACTIVE_FIELD_KEY, REQUEST_FOCUS_KEY } from '@/composables/useFormCommit'
+import { COMMIT_FIELD_KEY, ACTIVE_FIELD_KEY, REQUEST_FOCUS_KEY, NOTIFY_FOCUS_KEY } from '@/composables/useFormCommit'
 
 const store = useFormStore()
 
@@ -19,6 +19,10 @@ provide(ACTIVE_FIELD_KEY, computed(() => store.form?.activeFieldId ?? null))
 provide(REQUEST_FOCUS_KEY, (sectionId, fieldIndex, currentValue) =>
   store.requestFocusChange(sectionId, fieldIndex, currentValue),
 )
+
+provide(NOTIFY_FOCUS_KEY, (sectionId, fieldIndex) => {
+  store.notifyFocusGained(sectionId, fieldIndex).catch(console.error)
+})
 </script>
 
 <template>
