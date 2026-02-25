@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useFormStore } from '@/stores/formStore'
+import DateTimePicker from '@/components/form/DateTime/DateTime.vue'
+import type { DateTime as DateTimeValue } from '@/components/form/DateTime/DateTime.vue'
 
 const store = useFormStore()
 
@@ -21,6 +23,30 @@ const displayValue = (sectionId: string, index: number, storeValue: string) => {
 
 const setDraft = (sectionId: string, index: number, value: string) => {
   drafts.value[fieldKey(sectionId, index)] = value
+}
+
+// --- DateTime helpers ---
+const pad = (n: number) => String(n).padStart(2, '0')
+
+const parseDateTime = (s: string | undefined): DateTimeValue | null => {
+  if (!s) return null
+  const m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?$/.exec(s.trim())
+  if (!m) return null
+  const month = Number(m[2])
+  if (month < 1 || month > 12) return null
+  return {
+    year: Number(m[1]),
+    month: month as DateTimeValue['month'],
+    day: Number(m[3]),
+    hour: Number(m[4] ?? 0),
+    minute: Number(m[5] ?? 0),
+    second: 0,
+  }
+}
+
+const formatDateTime = (dt: DateTimeValue | null): string => {
+  if (!dt) return ''
+  return `${dt.year}-${pad(dt.month)}-${pad(dt.day)} ${pad(dt.hour)}:${pad(dt.minute)}`
 }
 
 /** Called on blur: send event if value changed, then clear the draft. */
@@ -80,13 +106,14 @@ const commitField = async (sectionId: string, index: number, storeValue: string)
               <v-textarea
                 v-else-if="field.type === 'textarea'"
                 :label="field.label.name"
-                :model-value="field.value ?? ''"
+                :model-value="displayValue(section.formId, i, field.value ?? '')"
                 density="compact"
                 variant="outlined"
                 rows="2"
                 auto-grow
-                readonly
                 hide-details="auto"
+                @update:model-value="(val) => setDraft(section.formId, i, String(val))"
+                @blur="() => commitField(section.formId, i, field.value ?? '')"
               />
 
               <v-text-field
@@ -105,8 +132,8 @@ const commitField = async (sectionId: string, index: number, storeValue: string)
                 :label="field.label.name"
                 :model-value="field.value ?? false"
                 density="compact"
-                readonly
                 hide-details="auto"
+                @update:model-value="(val) => store.sendFieldChange(section.formId, i, field.value ?? false, Boolean(val)).catch(console.error)"
               />
 
               <v-select
@@ -118,8 +145,11 @@ const commitField = async (sectionId: string, index: number, storeValue: string)
                 item-value="value"
                 density="compact"
                 variant="outlined"
-                readonly
                 hide-details="auto"
+                @update:model-value="(rawVal) => {
+                  const item = field.items.find((it) => it.value === rawVal)
+                  if (item) store.sendFieldChange(section.formId, i, field.value, item).catch(console.error)
+                }"
               />
 
               <div v-else-if="field.type === 'radio'">
@@ -128,8 +158,11 @@ const commitField = async (sectionId: string, index: number, storeValue: string)
                   :model-value="field.value?.value"
                   inline
                   density="compact"
-                  readonly
                   hide-details="auto"
+                  @update:model-value="(rawVal) => {
+                    const item = field.items.find((it) => it.value === rawVal)
+                    if (item) store.sendFieldChange(section.formId, i, field.value, item).catch(console.error)
+                  }"
                 >
                   <v-radio
                     v-for="item in field.items"
@@ -140,16 +173,17 @@ const commitField = async (sectionId: string, index: number, storeValue: string)
                 </v-radio-group>
               </div>
 
-              <v-text-field
-                v-else-if="field.type === 'datetime'"
-                :label="field.label.name"
-                :model-value="field.value ?? ''"
-                density="compact"
-                variant="outlined"
-                readonly
-                hide-details="auto"
-                prepend-inner-icon="mdi-calendar-clock"
-              />
+              <div v-else-if="field.type === 'datetime'">
+                <div class="text-body-2 mb-1">{{ field.label.name }}</div>
+                <DateTimePicker
+                  :model-value="parseDateTime(field.value)"
+                  :placeholder="field.label.name"
+                  @update:model-value="(dt) => {
+                    const str = formatDateTime(dt)
+                    store.sendFieldChange(section.formId, i, field.value ?? '', str).catch(console.error)
+                  }"
+                />
+              </div>
             </template>
           </div>
         </div>

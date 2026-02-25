@@ -23,8 +23,8 @@ export interface FormFieldChangedEvent {
   sectionId: string
   /** Index of the field within Section.fields */
   fieldIndex: number
-  oldValue: string
-  newValue: string
+  oldValue: unknown
+  newValue: unknown
   timestamp: number
 }
 

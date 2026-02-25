@@ -67,8 +67,8 @@ export const useFormStore = defineStore('form', () => {
   const sendFieldChange = async (
     sectionId: string,
     fieldIndex: number,
-    oldValue: string,
-    newValue: string,
+    oldValue: unknown,
+    newValue: unknown,
   ): Promise<void> => {
     if (!isConnected.value) throw new Error('Not connected')
 

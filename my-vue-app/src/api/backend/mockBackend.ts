@@ -107,13 +107,13 @@ let currentFormState: Form = JSON.parse(JSON.stringify(initialFormState))
 export const mockFormState = (): Form => currentFormState
 
 /**
- * Simulates the backend applying a text field change.
+ * Simulates the backend applying a field change.
  * Mutates the internal state and returns the new snapshot.
  */
 export function applyFormFieldChange(
   sectionId: string,
   fieldIndex: number,
-  newValue: string,
+  newValue: unknown,
 ): Form {
   const updated: Form = JSON.parse(JSON.stringify(currentFormState))
 
@@ -124,8 +124,20 @@ export function applyFormFieldChange(
     const field = section.fields[fieldIndex]
     if (!field) continue
 
-    if (field.type === 'text' || field.type === 'textarea') {
+    if ((field.type === 'text' || field.type === 'textarea') && typeof newValue === 'string') {
       field.value = newValue
+    } else if (field.type === 'checkbox' && typeof newValue === 'boolean') {
+      field.value = newValue
+    } else if (field.type === 'datetime' && typeof newValue === 'string') {
+      field.value = newValue
+    } else if (
+      (field.type === 'select' || field.type === 'radio') &&
+      typeof newValue === 'object' &&
+      newValue !== null &&
+      'label' in newValue &&
+      'value' in newValue
+    ) {
+      field.value = newValue as { label: string; value: string | number | boolean }
     }
     break
   }
