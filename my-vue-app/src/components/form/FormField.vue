@@ -36,6 +36,7 @@ const handleBlur = (currentValue: unknown) => {
 
 /** Called when any field gains focus (click or programmatic); syncs activeFieldId with the backend. */
 const handleFocus = () => {
+  if (activeField?.value === fieldId.value) return
   notifyFocusGained(props.sectionId, props.fieldIndex)
 }
 </script>
