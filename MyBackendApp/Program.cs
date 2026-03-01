@@ -1,4 +1,5 @@
 using my_backend_app.Hubs;
+using my_backend_app.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<FormStore>();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -35,6 +37,7 @@ app.MapGet("/api/hello", () =>
     .WithName("GetHello");
 
 app.MapHub<TestHub>("/api");
+app.MapHub<FormHub>("/hubs/form");
 
 var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
 app.MapGet("/weatherforecast", () =>

@@ -18,6 +18,7 @@
     "build-storybook": "set STORYBOOK=true && storybook build"
   },
   "dependencies": {
+    "@microsoft/signalr": "^8.0.7",
     "@mdi/font": "^7.4.47",
     "pinia": "^3.0.4",
     "vue": "^3.5.22",

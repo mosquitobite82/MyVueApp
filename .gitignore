@@ -1,3 +1,6 @@
+# Shared env (workspace root). Copy from .env.example; do not commit secrets.
+.env
+
 **/node_modules
 **/obj
 **/bin

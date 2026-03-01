@@ -1,6 +1,5 @@
 /**
- * Base URL for the .NET backend (matches launchSettings.json http profile).
- * Override with VITE_API_URL in .env for different environments.
+ * Base URL for the .NET backend. Loaded from workspace root .env (VITE_API_URL).
  */
 const API_BASE =
   (import.meta.env.VITE_API_URL as string | undefined) || 'http://localhost:5215';
