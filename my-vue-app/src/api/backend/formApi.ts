@@ -14,6 +14,18 @@ const API_BASE = import.meta.env.DEV
 
 const FORM_HUB_PATH = '/hubs/form';
 
+/** In sync with MyBackendApp Program.cs SignalR options (dev = longer for debugging, prod = defaults). */
+const SIGNALR_OPTIONS = {
+  dev: {
+    keepAliveIntervalMs: 2 * 60 * 1000,   // 2 min — match server KeepAliveInterval
+    serverTimeoutMs: 5 * 60 * 1000,      // 5 min — ≥ 2× KeepAlive, match server ClientTimeoutInterval
+  },
+  prod: {
+    keepAliveIntervalMs: 15 * 1000,      // 15s — match server default KeepAliveInterval
+    serverTimeoutMs: 30 * 1000,          // 30s — match server default ClientTimeoutInterval
+  },
+} as const;
+
 function getFormHubUrl(): string {
   const base = (API_BASE || '').replace(/\/$/, '');
   return base ? `${base}${FORM_HUB_PATH}` : FORM_HUB_PATH;
@@ -51,10 +63,13 @@ class FormApiHub {
 
     this.setConnectionState('connecting');
     const url = getFormHubUrl();
+    const opts = import.meta.env.DEV ? SIGNALR_OPTIONS.dev : SIGNALR_OPTIONS.prod;
     this.connection = new SignalR.HubConnectionBuilder()
       .withUrl(url)
       .withAutomaticReconnect()
       .build();
+    this.connection.keepAliveIntervalInMilliseconds = opts.keepAliveIntervalMs;
+    this.connection.serverTimeoutInMilliseconds = opts.serverTimeoutMs;
 
     this.connection.on('StateChange', (message: StateChangeMessage) => {
       this.stateChangeCallbacks.forEach((cb) => cb(message));

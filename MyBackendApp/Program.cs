@@ -9,7 +9,21 @@ builder.WebHost.UseUrls(builder.Configuration["ASPNETCORE_URLS"] ?? "http://loca
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableDetailedErrors = true;
+        // Longer intervals in dev so connection stays up while debugging (breakpoints, stepping)
+        options.KeepAliveInterval = TimeSpan.FromMinutes(2);
+        options.ClientTimeoutInterval = TimeSpan.FromMinutes(5); // 2× KeepAlive + buffer
+    }
+    else
+    {
+        options.EnableDetailedErrors = false;
+        // Production: use framework defaults (KeepAliveInterval 15s, ClientTimeoutInterval 30s)
+    }
+});
 builder.Services.AddSingleton<FormStore>();
 builder.Services.AddCors(options =>
 {
