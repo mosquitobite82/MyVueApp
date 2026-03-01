@@ -146,36 +146,46 @@ public class FormStore
         };
     }
 
-    public void ApplyFormFieldChange(string sectionId, int fieldIndex, object? newValue)
+    /// <returns>True if state changed (field was updated).</returns>
+    public bool ApplyFormFieldChange(string sectionId, int fieldIndex, object? newValue)
     {
         var section = FindSection(_state.Windows, sectionId);
-        if (section?.Fields.Count > fieldIndex == true)
-        {
-            var field = section.Fields[fieldIndex];
-            if (newValue is JsonElement je)
-                field.Value = je;
-            else
-                field.Value = newValue;
-        }
+        if (section?.Fields.Count > fieldIndex != true) return false;
+        var field = section.Fields[fieldIndex];
+        if (newValue is JsonElement je)
+            field.Value = je;
+        else
+            field.Value = newValue;
         _state.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        return true;
     }
 
-    public void ApplyFocusGain(string sectionId, int fieldIndex)
+    /// <returns>True if ActiveFieldId changed.</returns>
+    public bool ApplyFocusGain(string sectionId, int fieldIndex)
     {
-        _state.ActiveFieldId = $"{sectionId}:{fieldIndex}";
+        var newActive = $"{sectionId}:{fieldIndex}";
+        if (_state.ActiveFieldId == newActive) return false;
+        _state.ActiveFieldId = newActive;
         _state.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        return true;
     }
 
-    public void ApplyFocusChange(string sectionId, int fieldIndex, object? currentValue)
+    /// <returns>True if state changed (field value or ActiveFieldId).</returns>
+    public bool ApplyFocusChange(string sectionId, int fieldIndex, object? currentValue)
     {
+        var changed = false;
         var section = FindSection(_state.Windows, sectionId);
         if (section?.Fields.Count > fieldIndex == true && currentValue != null)
         {
             var field = section.Fields[fieldIndex];
-            if (currentValue is JsonElement je)
-                field.Value = je;
-            else
-                field.Value = currentValue;
+            if (!Equals(field.Value, currentValue))
+            {
+                changed = true;
+                if (currentValue is JsonElement je)
+                    field.Value = je;
+                else
+                    field.Value = currentValue;
+            }
         }
 
         var all = GetAllFieldIds(_state);
@@ -184,9 +194,15 @@ public class FormStore
         if (idx >= 0 && all.Count > 0)
         {
             var next = all[(idx + 1) % all.Count];
-            _state.ActiveFieldId = $"{next.sectionId}:{next.fieldIndex}";
+            var nextActive = $"{next.sectionId}:{next.fieldIndex}";
+            if (_state.ActiveFieldId != nextActive)
+            {
+                changed = true;
+                _state.ActiveFieldId = nextActive;
+            }
         }
         _state.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        return changed;
     }
 
     public void ResetToSeed()

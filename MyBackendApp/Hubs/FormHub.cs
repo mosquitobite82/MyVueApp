@@ -31,31 +31,33 @@ public class FormHub : Hub
     {
         if (evt == null) return;
 
+        var stateChanged = false;
         switch (evt.Type)
         {
             case "formFieldChanged":
                 if (evt.SectionId != null && evt.FieldIndex.HasValue)
                 {
-                    _formStore.ApplyFormFieldChange(evt.SectionId, evt.FieldIndex.Value, evt.NewValue);
+                    stateChanged = _formStore.ApplyFormFieldChange(evt.SectionId, evt.FieldIndex.Value, evt.NewValue);
                 }
                 break;
             case "formFocusChanged":
                 if (evt.SectionId != null && evt.FieldIndex.HasValue)
                 {
-                    _formStore.ApplyFocusChange(evt.SectionId, evt.FieldIndex.Value, evt.CurrentValue);
+                    stateChanged = _formStore.ApplyFocusChange(evt.SectionId, evt.FieldIndex.Value, evt.CurrentValue);
                 }
                 break;
             case "formFocusGained":
                 if (evt.SectionId != null && evt.FieldIndex.HasValue)
                 {
-                    _formStore.ApplyFocusGain(evt.SectionId, evt.FieldIndex.Value);
+                    stateChanged = _formStore.ApplyFocusGain(evt.SectionId, evt.FieldIndex.Value);
                 }
                 break;
             default:
                 break;
         }
 
-        await PushFormStateToAll();
+        if (stateChanged)
+            await PushFormStateToAll();
     }
 
     private async Task PushFormStateToCaller()
