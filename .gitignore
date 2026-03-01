@@ -1,0 +1,13 @@
+**/node_modules
+**/obj
+**/bin
+MyBackendApp/Properties/**
+**/appsettings.json
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/appsettings.Testing.json
+**/appsettings.Testing.Development.json
+**/appsettings.Testing.Production.json
+**/appsettings.Testing.Development.Production.json
+**/appsettings.Testing.Development.Production.Testing.json
+**/appsettings.Testing.Development.Production.Testing.Development.json

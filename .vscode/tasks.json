@@ -1,0 +1,69 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "${workspaceFolder}/MyBackendApp/my-backend-app.csproj", "-c", "Debug"],
+      "options": { "cwd": "${workspaceFolder}/MyBackendApp" },
+      "group": "build",
+      "presentation": { "reveal": "silent" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Build MyBackendApp",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "${workspaceFolder}/MyBackendApp/my-backend-app.csproj", "-c", "Debug"],
+      "options": { "cwd": "${workspaceFolder}/MyBackendApp" },
+      "group": "build",
+      "presentation": { "reveal": "silent" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Run MyBackendApp",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["run"],
+      "options": {
+        "cwd": "${workspaceFolder}/MyBackendApp",
+        "env": {}
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": "$msCompile",
+      "isBackground": false
+    },
+    {
+      "label": "Run my-vue-app",
+      "type": "process",
+      "command": "pnpm",
+      "args": ["run", "dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/my-vue-app",
+        "env": {}
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "VITE.*preparing",
+          "endsPattern": "Local:.*http://localhost:(\\d+)"
+        }
+      },
+      "isBackground": true
+    }
+  ]
+}

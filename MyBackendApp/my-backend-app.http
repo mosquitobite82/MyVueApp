@@ -1,0 +1,24 @@
+@my_backend_app_HostAddress = http://localhost:5215
+
+# ---------------------------------------------------------------------------
+# REST API
+# ---------------------------------------------------------------------------
+
+GET {{my_backend_app_HostAddress}}/api/hello
+Accept: application/json
+
+###
+
+# ---------------------------------------------------------------------------
+# SignalR (negotiate only — full connection needs WebSockets / a real client)
+# ---------------------------------------------------------------------------
+# Negotiate: verifies the hub endpoint responds and returns connectionId/connectionToken.
+# For full SignalR testing (connect, invoke Ping, receive Pong), use the Vue app or
+# a script with @microsoft/signalr.
+
+POST {{my_backend_app_HostAddress}}/api/negotiate?negotiateVersion=1
+Content-Type: application/json
+
+{}
+
+###

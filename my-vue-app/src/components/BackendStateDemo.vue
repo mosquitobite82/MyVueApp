@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useBackendConnection } from '@/composables/useBackendConnection';
 import Form from './form/Form.vue';
 import ConnectionStatus from './alert/ConnectionStatus.vue';
+import ConnectionTest from './ConnectionTest.vue';
 import Statistics from './Statistics.vue';
 import EntityList from './EntityList.vue';
 
@@ -70,6 +71,7 @@ const handleClearError = () => {
       <v-card-title>Backend State Store Demo</v-card-title>
       
       <v-card-text>
+        <ConnectionTest />
         <ConnectionStatus
           :is-connecting="isConnecting"
           :is-connected="isConnected"

@@ -1,0 +1,46 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch & Debug MyBackendApp",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/MyBackendApp/my-backend-app.csproj"
+    },
+    {
+      "name": "Run MyBackendApp",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/MyBackendApp/my-backend-app.csproj",
+      "justMyCode": true
+    },
+    {
+      "name": "Debug my-vue-app",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/my-vue-app/src",
+      "preLaunchTask": "Run my-vue-app",
+      "sourceMapPathOverrides": {
+        "webpack:///src/*": "${webRoot}/*",
+        "webpack:///./*": "${webRoot}/*",
+        "webpack:///./~/*": "${webRoot}/node_modules/*"
+      }
+    },
+    {
+      "name": "Run my-vue-app",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/my-vue-app/src",
+      "preLaunchTask": "Run my-vue-app"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack (Backend + Frontend)",
+      "configurations": ["Launch & Debug MyBackendApp", "Debug my-vue-app"],
+      "stopAll": true
+    }
+  ]
+}

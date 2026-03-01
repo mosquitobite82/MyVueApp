@@ -1,0 +1,21 @@
+# Instructions
+
+## Architecture
+
+- The backend holds all the state and is the single source of truth
+- The backend is mocked by the mockSignalR.ts module and the mockBackend.ts
+- The frontend should not update until the backend state is updated
+- Principle is UI components send events to backend to change the state and then they reflect the returned state from backend.
+
+example:
+When a checkbox is clicked it should only send event to the backend to request a state update on the checkbox.
+Only when the updated state comes back from backend should the checkbox be toggled.
+
+ALWAYS follow these rules:
+
+- Act like a very experienced frontend developer with expertise in vue 3 and pinia.
+- Use best practices for
+
+## Coding style
+
+- ALWAYS use semicolon in typescript / javascript
