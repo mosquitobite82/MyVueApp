@@ -3,6 +3,9 @@ using my_backend_app.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Listen on 5215 so frontend (VITE_API_URL default) can reach SignalR without .env
+builder.WebHost.UseUrls(builder.Configuration["ASPNETCORE_URLS"] ?? "http://localhost:5215");
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -12,7 +15,9 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:5174")
+        policy.WithOrigins(
+                  "http://localhost:5173", "http://localhost:5174",
+                  "http://127.0.0.1:5173", "http://127.0.0.1:5174")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

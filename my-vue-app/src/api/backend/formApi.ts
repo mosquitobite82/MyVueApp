@@ -7,14 +7,16 @@ import type {
   ConnectionStateCallback,
 } from '@/api/mock/signalr';
 
-const API_BASE =
-  (import.meta.env.VITE_API_URL as string | undefined) || 'http://localhost:5215';
+// In dev we use relative URL so Vite proxies /hubs to the backend (no cross-origin). In prod use VITE_API_URL.
+const API_BASE = import.meta.env.DEV
+  ? ''
+  : ((import.meta.env.VITE_API_URL as string | undefined) || '');
 
 const FORM_HUB_PATH = '/hubs/form';
 
 function getFormHubUrl(): string {
-  const base = API_BASE.replace(/\/$/, '');
-  return `${base}${FORM_HUB_PATH}`;
+  const base = (API_BASE || '').replace(/\/$/, '');
+  return base ? `${base}${FORM_HUB_PATH}` : FORM_HUB_PATH;
 }
 
 function mapConnectionState(s: SignalR.HubConnectionState): ConnectionState {
@@ -67,7 +69,11 @@ class FormApiHub {
       this.setConnectionState(mapConnectionState(this.connection.state));
     } catch (err) {
       this.setConnectionState('disconnected');
-      throw err;
+      const hubUrl = getFormHubUrl();
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(
+        `${message} (hub URL: ${hubUrl}). Ensure the .NET backend is running at that address.`
+      );
     }
   }
 

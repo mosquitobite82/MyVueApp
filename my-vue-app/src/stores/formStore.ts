@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { mockSignalRHub } from '@/api/mock/signalr'
+import { useBackendSelectionStore } from '@/stores/backendSelectionStore'
 import type { StateChangeMessage } from '@/api/mock/signalr'
 import type { Form } from '@/types/form'
 import { mockFormState } from '@/api/backend/mockBackend'
@@ -28,21 +28,22 @@ export const useFormStore = defineStore('form', () => {
   const connect = async (): Promise<void> => {
     if (isConnected.value) return
 
+    const hub = useBackendSelectionStore().currentHub
     isLoading.value = true
     error.value = null
 
     try {
-      await mockSignalRHub.start()
+      await hub.start()
 
-      unsubscribeStateChange = mockSignalRHub.onStateChange(handleStateChange)
-      unsubscribeConnectionState = mockSignalRHub.onConnectionStateChanged(
-        handleConnectionStateChange,
-      )
+      unsubscribeStateChange = hub.onStateChange(handleStateChange)
+      unsubscribeConnectionState = hub.onConnectionStateChanged(handleConnectionStateChange)
 
-      isConnected.value = mockSignalRHub.getConnectionState() === 'connected'
+      isConnected.value = hub.getConnectionState() === 'connected'
 
-      // Simulate backend pushing the initial form state on connect
-      mockSignalRHub.pushFormState(mockFormState())
+      // Mock backend: push initial form state; real backend sends it on connect
+      if (typeof hub.pushFormState === 'function') {
+        hub.pushFormState(mockFormState())
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Unknown error'
       throw err
@@ -56,7 +57,8 @@ export const useFormStore = defineStore('form', () => {
     unsubscribeStateChange = null
     unsubscribeConnectionState?.()
     unsubscribeConnectionState = null
-    mockSignalRHub.stop()
+    const hub = useBackendSelectionStore().currentHub
+    hub.stop()
     isConnected.value = false
   }
 
@@ -81,11 +83,11 @@ export const useFormStore = defineStore('form', () => {
       timestamp: Date.now(),
     }
 
-    await mockSignalRHub.sendEvent(event)
+    await useBackendSelectionStore().currentHub.sendEvent(event)
   }
 
   /**
-   * Sends a "user blurred field X with value Y" event to the mock backend.
+   * Sends a "user blurred field X with value Y" event to the backend.
    * The backend validates the value, updates the field if valid, advances
    * `activeFieldId` to the next field, and pushes back the updated form state.
    */
@@ -104,7 +106,7 @@ export const useFormStore = defineStore('form', () => {
       timestamp: Date.now(),
     }
 
-    await mockSignalRHub.sendEvent(event)
+    await useBackendSelectionStore().currentHub.sendEvent(event)
   }
 
   /**
@@ -121,7 +123,7 @@ export const useFormStore = defineStore('form', () => {
       timestamp: Date.now(),
     }
 
-    await mockSignalRHub.sendEvent(event)
+    await useBackendSelectionStore().currentHub.sendEvent(event)
   }
 
   const clearError = (): void => {

@@ -18,6 +18,13 @@ const isStorybook =
 export default defineConfig({
   // Load .env from workspace root so frontend and backend share the same config
   envDir: path.resolve(__dirname, '..'),
+  server: {
+    // Proxy API and SignalR to backend so the browser never does cross-origin requests (avoids CORS / "Failed to fetch")
+    proxy: {
+      '/api': { target: 'http://localhost:5215', changeOrigin: true },
+      '/hubs': { target: 'http://localhost:5215', changeOrigin: true, ws: true },
+    },
+  },
   plugins: [
     vue(),
     // Exclude vite-plugin-vue-devtools when running Storybook
