@@ -38,7 +38,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.MapGet("/api/hello", () =>
-    Results.Ok(new { message = "Hello from backend", timestamp = DateTime.UtcNow }))
+    Results.Ok(new { message = "Hello from dotnet backend", timestamp = DateTime.UtcNow }))
     .WithName("GetHello");
 
 app.MapHub<TestHub>("/api");
